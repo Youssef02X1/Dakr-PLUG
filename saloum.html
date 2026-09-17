@@ -8,7 +8,7 @@
   <meta property="og:description" content="Pirogues, mangroves, bolongs et villages de pêcheurs. Une immersion dans l'une des plus belles réserves d'Afrique de l'Ouest.">
   <meta property="og:image" content="https://dakarplug.netlify.app/images/saloum-hero.jpg">
   <meta property="og:type" content="website">
-  <title>Delta du Saloum — Dakar PLUG</title>
+  <title>Delta du Sine-Saloum — Dakar PLUG</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
@@ -597,7 +597,7 @@
     <ul class="nav-links" style="--nav-link-color:rgba(255,255,255,.55)">
       <li><a href="index.html" style="color:rgba(255,255,255,.55)">Accueil</a></li>
       <li><a href="index.html#activites" style="color:rgba(255,255,255,.55)">Activités Dakar</a></li>
-      <li><a href="saloum.html" style="color:var(--saloum-or);font-weight:500">Delta du Saloum</a></li>
+      <li><a href="saloum.html" style="color:var(--saloum-or);font-weight:500">Delta du Sine-Saloum</a></li>
     </ul>
     <div class="nav-actions">
       <div id="navUserArea">
@@ -689,7 +689,7 @@
             <div class="saloum-feature-icon"><i class="ti ti-calendar" aria-hidden="true"></i></div>
             <div class="saloum-feature-text">
               <strong>Sur mesure</strong>
-              <span>Départs depuis Dakar, Ndangane, Aeroport ou directement depuis l'île</span>
+              <span>Départs depuis Dakar, transfert AIBD, Ndangane ou directement depuis l'île</span>
             </div>
           </div>
         </div>
@@ -800,7 +800,7 @@
           <div class="package-footer">
             <div class="package-price">
               <span class="package-price-label">À partir de</span>
-              <span class="package-price-value">"35 000 FCFA</span>
+              <span class="package-price-value">35 000 FCFA</span>
               <span class="package-price-sub">par personne</span>
             </div>
             <button class="btn-saloum" onclick="ouvrirReservation(2);event.stopPropagation()">
@@ -982,14 +982,14 @@
       <div class="pratique-card">
         <div class="pratique-icon"><i class="ti ti-users-group" aria-hidden="true"></i></div>
         <h3>Taille des groupes</h3>
-        <p>Minimum 2 personnes, maximum 8 par pirogue.
-           Pour les groupes de 9 à 20 personnes, nous organisons
+        <p>Minimum 2 personnes, maximum 14 par pirogue.
+           Pour les groupes de 15 à 25 personnes, nous organisons
            plusieurs pirogues en convoi. Tarifs dégressifs dès 4 personnes.</p>
       </div>
       <div class="pratique-card">
         <div class="pratique-icon"><i class="ti ti-credit-card" aria-hidden="true"></i></div>
         <h3>Paiement</h3>
-        <p>Wave, Orange Money ou espèces sur place.
+        <p>Wave, Orange Money ou carte.
            Acompte de 30% à la réservation en ligne.
            Solde à régler au départ de l'excursion.</p>
       </div>
@@ -1009,7 +1009,7 @@
   <div class="container">
     <div class="saloum-section-header" style="margin-bottom:36px">
       <span class="saloum-section-eyebrow">Localisation</span>
-      <h2 style="color:#fff">Mar Lodj & le Delta du Saloum</h2>
+      <h2 style="color:#fff">Mar Lodj & le Delta du Sine-Saloum</h2>
     </div>
     <div id="saloumMap" role="application" aria-label="Carte du Delta du Saloum"></div>
   </div>
@@ -1033,7 +1033,7 @@
         <i class="ti ti-sailboat" style="font-size:16px"></i>
         Choisir une excursion
       </button>
-      <a href="https://wa.me/779913729?text=Bonjour, je souhaite réserver une excursion dans le Delta du Saloum"
+      <a href="https://wa.me/VOTRE_NUMERO?text=Bonjour, je souhaite réserver une excursion dans le Delta du Saloum"
          target="_blank" rel="noopener noreferrer"
          class="btn-saloum btn-saloum-outline"
          style="border-color:rgba(255,255,255,.4);color:#fff;font-size:14px;padding:14px 28px">
@@ -1055,7 +1055,7 @@
       <a href="cgv.html#remboursement" style="color:rgba(255,255,255,.3)">Remboursement</a>
       <a href="cgv.html#contact" style="color:rgba(255,255,255,.3)">Contact</a>
     </div>
-    <span style="font-size:12px;color:rgba(255,255,255,.2)">© 2025 Dakar PLUG</span>
+    <span style="font-size:12px;color:rgba(255,255,255,.2)">© 2026 Dakar PLUG</span>
   </div>
 </footer>
 
@@ -1119,7 +1119,7 @@ function ouvrirReservation(pack) {
       `Bonjour, je souhaite réserver l'excursion "${noms[pack]}" dans le Delta du Saloum.\n` +
       `Pouvez-vous me confirmer les disponibilités ?`
     );
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank', 'noopener,noreferrer');
+    window.open(`https://wa.me/${779913729}?text=${msg}`, '_blank', 'noopener,noreferrer');
   }
 }
 
