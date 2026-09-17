@@ -35,7 +35,12 @@
 <div id="dashboardMain" style="display:none">
 
   <!-- SIDEBAR -->
-  <aside style="position:fixed;top:0;left:0;bottom:0;width:232px;background:var(--ink);z-index:100;display:flex;flex-direction:column;overflow-y:auto">
+  <button class="dash-hamburger" id="dashHamburger" onclick="toggleDashSidebar()" aria-label="Menu">
+    <i class="ti ti-menu-2"></i>
+  </button>
+  <div class="dash-backdrop" id="dashBackdrop" onclick="toggleDashSidebar(false)"></div>
+
+  <aside class="dash-sidebar" id="dashSidebar">
     <div style="padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.07)">
       <div class="nav-logo" style="color:#fff;margin-bottom:4px"><span style="color:var(--accent)">Dakar</span>PLUG</div>
       <div style="font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.3)">Administration</div>
@@ -93,7 +98,7 @@
   </aside>
 
   <!-- CONTENU -->
-  <main style="margin-left:232px;padding:36px;min-height:100vh;background:var(--paper)">
+  <main class="dash-main">
 
     <!-- ─── VUE D'ENSEMBLE ─── -->
     <section id="sectionOverview" class="dash-section">
@@ -483,6 +488,37 @@
 
 <style>
 .dash-section { animation: fadeIn .25s ease; }
+
+/* ── Layout desktop (comportement inchangé au-dessus de 900px) ── */
+.dash-sidebar {
+  position: fixed; top: 0; left: 0; bottom: 0; width: 232px;
+  background: var(--ink); z-index: 100;
+  display: flex; flex-direction: column; overflow-y: auto;
+  transition: transform .28s var(--ease-out, ease);
+}
+.dash-main { margin-left: 232px; padding: 36px; min-height: 100vh; background: var(--paper); }
+.dash-hamburger, .dash-backdrop { display: none; }
+
+/* ── Mobile : la sidebar devient un tiroir coulissant ── */
+@media (max-width: 900px) {
+  .dash-sidebar { transform: translateX(-100%); width: 260px; }
+  .dash-sidebar.open { transform: translateX(0); }
+  .dash-main { margin-left: 0; padding: 24px 16px 36px; padding-top: 68px; }
+
+  .dash-hamburger {
+    display: flex; align-items: center; justify-content: center;
+    position: fixed; top: 14px; left: 14px; z-index: 120;
+    width: 40px; height: 40px; border-radius: var(--r-sm);
+    background: var(--ink); color: #fff; border: none; font-size: 18px;
+    cursor: pointer;
+  }
+  .dash-backdrop {
+    display: block; position: fixed; inset: 0; z-index: 99;
+    background: rgba(0,0,0,.4); opacity: 0; pointer-events: none;
+    transition: opacity .2s ease;
+  }
+  .dash-backdrop.open { opacity: 1; pointer-events: auto; }
+}
 .dash-link {
   display:flex;align-items:center;gap:10px;padding:9px 12px;
   border-radius:var(--r-xs);font-size:13px;color:rgba(255,255,255,.55);
@@ -530,8 +566,17 @@ document.getElementById('modalConfirm').addEventListener('click', function(e) {
 // ─────────────────────────────
 //  NAVIGATION SECTIONS
 // ─────────────────────────────
+function toggleDashSidebar(force) {
+  const sidebar  = document.getElementById('dashSidebar');
+  const backdrop = document.getElementById('dashBackdrop');
+  const open = force !== undefined ? force : !sidebar.classList.contains('open');
+  sidebar.classList.toggle('open', open);
+  backdrop.classList.toggle('open', open);
+}
+
 function showSection(name, linkEl) {
   document.querySelectorAll('.dash-section').forEach(s=>s.style.display='none');
+  toggleDashSidebar(false);
   const sectionMap = {
     overview:'Overview', reservations:'Reservations', annonces:'Annonces',
     nouvelle:'Nouvelle', avis:'Avis', revenus:'Revenus'
@@ -572,7 +617,7 @@ async function renderOverview() {
     _acts  = await window.DakarApp.Activites.getAllAdmin();
   } catch(e) {
     console.error('Erreur chargement overview :', e);
-    showToast('Impossible de charger les statistiques. Vérifiez la configuration Supabase.', 'error');
+    showToast(`Statistiques : ${e.message || e.code || 'erreur inconnue'}`, 'error');
   }
 
   // Dernières réservations (5)
@@ -618,7 +663,7 @@ async function renderResas() {
     _resas = await Reservations.getToutes();
   } catch(e) {
     console.error('Erreur chargement réservations :', e);
-    showToast('Impossible de charger les réservations.', 'error');
+    showToast(`Réservations : ${e.message || e.code || 'erreur inconnue'}`, 'error');
   }
 
   const filtre = document.getElementById('filterResaStatut')?.value;
@@ -714,7 +759,7 @@ async function renderAnnonces() {
     _acts = await Activites.getAllAdmin();
   } catch(e) {
     console.error('Erreur chargement annonces :', e);
-    showToast('Impossible de charger les annonces.', 'error');
+    showToast(`Annonces : ${e.message || e.code || 'erreur inconnue'}`, 'error');
   }
 
   document.getElementById('annoncesGrid').innerHTML = _acts.length ? _acts.map(a=>`
