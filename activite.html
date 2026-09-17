@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Activité — Dakar PLUG</title>
+  <meta name="description" content="Détails et réservation de l'activité">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<nav class="navbar" id="navbar">
+  <div class="container navbar-inner">
+    <a href="index.html" class="nav-logo"><span>Dakar</span>PLUG</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="index.html#activites">Activités</a></li>
+      <li><a href="saloum.html" style="color:var(--teal);font-weight:500">Delta du Sine-Saloum</a></li>
+      <li><a href="index.html#carte">Carte</a></li>
+    </ul>
+    <div class="nav-actions">
+      <div id="navUserArea">
+        <a href="auth.html" class="btn btn-ghost btn-sm">Connexion</a>
+        <a href="auth.html?mode=signup" class="btn btn-primary btn-sm">S'inscrire</a>
+      </div>
+      <button class="hamburger" id="hamburger" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+<div class="mobile-nav" id="mobileNav">
+  <a href="index.html">Accueil</a>
+  <a href="index.html#activites">Activités</a>
+  <a href="espace-utilisateur.html">Mon espace</a>
+  <a href="auth.html" class="btn btn-primary" style="margin-top:12px;width:100%;justify-content:center">Connexion</a>
+</div>
+
+<main class="activity-detail">
+  <div class="container">
+
+    <!-- Skeleton -->
+    <div id="skeletonLoader">
+      <div class="skeleton" style="height:380px;border-radius:var(--r-xl);margin-bottom:40px"></div>
+      <div style="display:grid;grid-template-columns:1fr 340px;gap:40px">
+        <div>
+          <div class="skeleton" style="height:36px;width:55%;margin-bottom:14px;border-radius:var(--r-sm)"></div>
+          <div class="skeleton" style="height:14px;width:38%;margin-bottom:24px;border-radius:var(--r-xs)"></div>
+          <div class="skeleton" style="height:90px;margin-bottom:16px;border-radius:var(--r-sm)"></div>
+          <div class="skeleton" style="height:14px;width:80%;border-radius:var(--r-xs)"></div>
+        </div>
+        <div class="skeleton" style="border-radius:var(--r-xl);height:380px"></div>
+      </div>
+    </div>
+
+    <!-- Contenu chargé -->
+    <div id="detailContent" style="display:none"></div>
+
+  </div>
+</main>
+
+<footer style="background:var(--ink);padding:28px 0;margin-top:80px">
+  <div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+      <a href="index.html" class="nav-logo" style="color:#fff"><span style="color:var(--accent)">Dakar</span>PLUG</a>
+      <span style="font-size:12px;color:rgba(255,255,255,.3)">© 2026 Dakar PLUG</span>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="seo.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+// ============ HELPERS ============
+// CORRECTIF CRITIQUE : esc()/safeUrl() sont utilisés dans toute cette page mais
+// n'étaient définis nulle part (app.js, qui les fournit sur index.html, n'est pas
+// chargé ici) — chaque appel provoquait un ReferenceError qui interrompait le
+// rendu de la fiche activité. En plus de réparer la page, cet échappement est
+// ce qui protège les noms/avis affichés (données utilisateur) contre l'injection
+// de HTML/JS.
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#x27;');
+}
+function safeUrl(u) {
+  if (!u) return '';
+  if (/^https?:\/\//i.test(u)) return u;
+  return '';
+}
+
+function showToast(msg, type='info') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.textContent = msg;
+  t.setAttribute('role','alert');
+  c.appendChild(t);
+  setTimeout(()=>t.remove(), 4000);
+}
+
+function renderStars(note) {
+  const n = parseFloat(note) || 0;
+  const full = Math.floor(n);
+  const half = n % 1 >= 0.5 ? 1 : 0;
+  const empty = 5 - full - half;
+  return '<span class="stars" aria-hidden="true">'
+    + '&#9733;'.repeat(full)
+    + (half ? '&#9734;' : '')
+    + '&#9734;'.repeat(empty)
+    + '</span>';
+}
+
+function getActivityId() {
+  const id = parseInt(new URLSearchParams(window.location.search).get('id'), 10);
+  return Number.isFinite(id) ? id : null;
+}
+
+// ============ RENDER ============
+function renderDetail(a) {
+  document.getElementById('skeletonLoader').style.display = 'none';
+  const content = document.getElementById('detailContent');
+  content.style.display = '';
+
+  document.title = `${esc(a.nom)} — Dakar PLUG`;
+  document.querySelector('meta[name="description"]').content = (a.description||'').slice(0,160);
+
+  const prixAff = a.promo ? Math.round(a.prix*(1-a.promo/100)) : a.prix;
+  const images = (a.images && a.images.length > 0) ? a.images : [a.image_principale, a.image_principale, a.image_principale];
+  const options = Array.isArray(a.options) ? a.options : [];
+  const avis = Array.isArray(a.avis) ? a.avis.filter(av=>av) : [];
+  const dispos = Array.isArray(a.disponibilites) ? a.disponibilites : [];
+  const unavailableDates = dispos.filter(d=>!d.disponible).map(d=>d.date);
+
+  content.innerHTML = `
+    <!-- BREADCRUMB -->
+    <nav aria-label="Fil d'ariane" style="margin-bottom:20px;font-size:12px;color:var(--ink-3)">
+      <a href="index.html" style="color:var(--teal)">Accueil</a>
+      <span style="margin:0 6px">/</span>
+      <a href="index.html?cat=${a.categorie}" style="color:var(--teal)">${a.categorie.replace('_',' ')}</a>
+      <span style="margin:0 6px">/</span>
+      <span>${esc(a.nom)}</span>
+    </nav>
+
+    <!-- GALERIE -->
+    <div class="detail-gallery" style="margin-bottom:48px" role="region" aria-label="Galerie photos">
+      <div class="main-img" style="cursor:pointer" onclick="openGallery(0)">
+        <img id="mainImg" src="${safeUrl(images[0])}" alt="${esc(a.nom)} — photo principale" loading="eager">
+      </div>
+      <div class="sub-imgs">
+        <div onclick="switchMainImg('${safeUrl(images[1])}',this)" style="cursor:pointer;overflow:hidden">
+          <img src="${safeUrl(images[1])}" alt="${esc(a.nom)} — photo 2" loading="lazy">
+        </div>
+        <div onclick="switchMainImg('${safeUrl(images[2] || images[0])}',this)" style="cursor:pointer;overflow:hidden;position:relative">
+          <img src="${safeUrl(images[2] || images[0])}" alt="${esc(a.nom)} — photo 3" loading="lazy">
+          ${(a.images||[]).length > 3 ? `<div style="position:absolute;inset:0;background:rgba(13,13,13,.5);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:500">+${a.images.length - 2} photos</div>` : ''}
+        </div>
+      </div>
+    </div>
+
+    <!-- LAYOUT -->
+    <div class="detail-layout">
+
+      <!-- COLONNE GAUCHE -->
+      <div class="detail-info">
+        <h1>${esc(a.nom)}</h1>
+
+        <div class="detail-meta-row">
+          <span class="badge badge-teal">${a.categorie.replace('_',' ')}</span>
+          <span class="tag"><i class="ti ti-map-pin" style="font-size:12px" aria-hidden="true"></i>${esc(a.zone)}</span>
+          ${a.duree  ? `<span class="tag"><i class="ti ti-clock" style="font-size:12px" aria-hidden="true"></i>${esc(a.duree)}</span>` : ''}
+          ${a.niveau ? `<span class="tag"><i class="ti ti-chart-bar" style="font-size:12px" aria-hidden="true"></i>${esc(a.niveau)}</span>` : ''}
+          ${a.capacite ? `<span class="tag"><i class="ti ti-users" style="font-size:12px" aria-hidden="true"></i>Max ${a.capacite} pers.</span>` : ''}
+        </div>
+
+        ${a.nb_avis > 0 ? `
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
+          ${renderStars(a.note)}
+          <strong style="font-size:1rem">${a.note}</strong>
+          <span style="color:var(--ink-3);font-size:13px">(${a.nb_avis} avis)</span>
+        </div>` : ''}
+
+        <p class="detail-desc">${esc(a.description || '')}</p>
+
+        <div class="divider"></div>
+
+        <!-- OPTIONS -->
+        ${options.length > 0 ? `
+        <h2 style="font-size:15px;font-weight:600;margin-bottom:16px">Options disponibles</h2>
+        <div class="options-list" id="optionsList">
+          ${options.map((opt,i) => `
+            <label class="option-item" for="opt${i}">
+              <input type="checkbox" id="opt${i}" value="${opt.prix||0}"
+                     data-label="${opt.label||''}" onchange="updateWidgetPrice()">
+              <span>${opt.label||''}</span>
+              <span class="option-price">+${(opt.prix||0).toLocaleString('fr-FR')} FCFA</span>
+            </label>
+          `).join('')}
+        </div>
+        <div class="divider"></div>
+        ` : ''}
+
+        <!-- LOCALISATION -->
+        <h2 style="font-size:15px;font-weight:600;margin-bottom:10px">Localisation</h2>
+        <p style="color:var(--ink-3);font-size:13px;margin-bottom:16px">
+          <i class="ti ti-map-pin" style="font-size:13px;margin-right:4px" aria-hidden="true"></i>
+          ${a.adresse || a.zone}
+        </p>
+        ${a.lat && a.lng ? `<div id="miniMap" style="height:180px;border-radius:var(--r-lg);overflow:hidden;margin-bottom:32px;border:1px solid var(--line)" aria-label="Carte de localisation"></div>` : ''}
+
+        <div class="divider"></div>
+
+        <!-- AVIS -->
+        <div class="avis-section">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+            <div>
+              <h2 style="font-size:1.1rem;font-weight:600">Avis clients</h2>
+              <p style="color:var(--ink-3);font-size:12px;margin-top:2px">${a.nb_avis} avis vérifiés</p>
+            </div>
+          </div>
+
+          <div id="avisGrid" class="avis-grid">
+            ${avis.length > 0 ? avis.slice(0,6).map(av => `
+              <div class="avis-card">
+                <div class="avis-header">
+                  <span class="avis-author">${av.profiles ? `${esc(av.profiles.prenom||'')} ${esc((av.profiles.nom||'').charAt(0))}.` : 'Anonyme'}</span>
+                  <span class="avis-date">${av.created_at ? new Date(av.created_at).toLocaleDateString('fr-FR') : ''}</span>
+                </div>
+                <div style="margin-bottom:8px">${renderStars(av.note)}</div>
+                <p class="avis-text">${esc(av.texte||'')}</p>
+              </div>
+            `).join('') : `<p style="color:var(--ink-3);font-size:13px;grid-column:1/-1">Aucun avis pour le moment. Soyez le premier !</p>`}
+          </div>
+
+          <!-- FORMULAIRE AVIS -->
+          <div id="avisForm" style="margin-top:28px;padding:24px;background:var(--paper-2);border-radius:var(--r-lg);border:1px solid var(--line)">
+            <h3 style="font-size:14px;font-weight:600;margin-bottom:16px">Laisser un avis</h3>
+            <div style="display:flex;gap:6px;margin-bottom:14px" role="group" aria-label="Sélectionner une note">
+              ${[1,2,3,4,5].map(n=>`
+                <button type="button" onclick="selectNote(${n})" data-val="${n}"
+                        class="note-btn btn btn-outline btn-sm" aria-label="${n} étoile${n>1?'s':''}">
+                  ${'★'.repeat(n)}
+                </button>
+              `).join('')}
+            </div>
+            <textarea id="avisTexte" rows="3" placeholder="Partagez votre expérience…" maxlength="500"
+                      style="margin-bottom:12px" aria-label="Votre avis"></textarea>
+            <button class="btn btn-primary btn-sm" onclick="submitAvis(${a.id})">Publier mon avis</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLONNE DROITE — BOOKING WIDGET -->
+      <div>
+        <div class="booking-widget">
+          <div class="price-big" style="margin-bottom:4px">
+            ${a.promo ? `<div style="font-size:13px;color:var(--ink-3);text-decoration:line-through">${a.prix.toLocaleString('fr-FR')} FCFA</div>` : ''}
+            <strong>${prixAff.toLocaleString('fr-FR')} FCFA</strong>
+            <span>/ personne</span>
+            ${a.promo ? `<span class="badge badge-accent" style="margin-left:8px">-${a.promo}%</span>` : ''}
+          </div>
+          ${a.nb_avis > 0 ? `<div style="font-size:12px;color:var(--ink-3);margin-bottom:20px">${renderStars(a.note)} ${a.note} · ${a.nb_avis} avis</div>` : '<div style="margin-bottom:20px"></div>'}
+
+          <div class="booking-form">
+            <div class="field">
+              <label for="bkDate">Date de réservation</label>
+              <input type="date" id="bkDate" min="${new Date().toISOString().split('T')[0]}"
+                     onchange="updateWidgetPrice();checkDispo(this.value)" aria-required="true">
+              <div id="dispoMsg" style="font-size:12px;display:none"></div>
+            </div>
+            <!-- SÉLECTEUR PÉRIODE (affiché si l'activité est jour ET nuit) -->
+            <div id="widgetPeriode" style="display:none;margin-bottom:12px">
+              <label style="font-size:12px;font-weight:500;color:var(--ink-2);display:block;margin-bottom:6px">Période</label>
+              <div style="display:flex;gap:8px">
+                <button type="button" id="bkBtnJour"
+                        onclick="selectWidgetPeriode('jour')"
+                        style="flex:1;padding:8px;border:1.5px solid var(--gold);border-radius:var(--r-sm);
+                               background:var(--gold-lt);color:var(--gold);font-size:12px;font-weight:600;cursor:pointer">
+                  ☀ Journée
+                </button>
+                <button type="button" id="bkBtnNuit"
+                        onclick="selectWidgetPeriode('nuit')"
+                        style="flex:1;padding:8px;border:1.5px solid var(--line-2);border-radius:var(--r-sm);
+                               background:var(--white);color:var(--ink-3);font-size:12px;font-weight:600;cursor:pointer">
+                  🌙 Soirée
+                </button>
+              </div>
+            </div>
+            <div class="field">
+              <label for="bkHeure">Horaire</label>
+              <select id="bkHeure" aria-required="true">
+                <option value="">Choisir un horaire</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Personnes</label>
+              <div style="display:flex;align-items:center;gap:14px">
+                <button type="button" class="btn btn-outline btn-sm" onclick="changeNb(-1)" aria-label="Réduire">
+                  <i class="ti ti-minus" style="font-size:12px" aria-hidden="true"></i>
+                </button>
+                <span id="nbDisplay" style="font-size:1rem;font-weight:600;min-width:20px;text-align:center">1</span>
+                <button type="button" class="btn btn-outline btn-sm" onclick="changeNb(1)" aria-label="Augmenter">
+                  <i class="ti ti-plus" style="font-size:12px" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="price-breakdown">
+            <div class="price-line">
+              <span id="bkLineBase">1 × ${prixAff.toLocaleString('fr-FR')} FCFA</span>
+              <span id="bkLineBaseVal">${prixAff.toLocaleString('fr-FR')} FCFA</span>
+            </div>
+            <div class="price-line" id="bkLineOpts" style="display:none">
+              <span>Options</span>
+              <span id="bkLineOptsVal">—</span>
+            </div>
+            <div class="price-total">
+              <span>Total</span>
+              <strong id="bkTotal">${prixAff.toLocaleString('fr-FR')} FCFA</strong>
+            </div>
+          </div>
+
+          <button class="btn btn-accent" style="width:100%;margin-top:18px;font-size:14px"
+                  onclick="goReserver(${a.id})" id="bkBtn">
+            <i class="ti ti-calendar-check" style="font-size:15px" aria-hidden="true"></i>
+            Réserver maintenant
+          </button>
+
+          <p style="text-align:center;font-size:11px;color:var(--ink-4);margin-top:10px">
+            Paiement sécurisé · Wave &amp; Orange Money
+          </p>
+
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <button class="btn btn-outline btn-sm fav-btn" style="flex:1" onclick="toggleFavori(${a.id})" id="favBtn">
+              <i class="ti ti-heart" id="favIcon" style="font-size:13px" aria-hidden="true"></i>
+              Sauvegarder
+            </button>
+            <button class="btn btn-outline btn-sm" style="flex:1" onclick="partager()">
+              <i class="ti ti-share" style="font-size:13px" aria-hidden="true"></i>
+              Partager
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // SEO — balises structurées
+  if (window.SEO) {
+    const SITE_URL = window.DakarApp?.SITE_URL || window.location.origin;
+    SEO.setMeta({
+      titre:       `${esc(a.nom)} — Dakar PLUG`,
+      description: (a.description || '').slice(0, 160),
+      image:        a.image_principale,
+      url:         `${SITE_URL}/activite.html?id=${a.id}`,
+      type:        'website',
+    });
+    SEO.injectActivite(a, SITE_URL);
+    SEO.injectBreadcrumb([
+      { label: 'Accueil', url: '/index.html' },
+      { label: a.categorie, url: `/index.html?cat=${a.categorie}` },
+      { label: a.nom },
+    ], SITE_URL);
+  }
+  // Données globales pour le widget
+  window._act = a;
+  window._prixAff = prixAff;
+  window._unavailableDates = unavailableDates;
+  window._nb = 1;
+
+  // Mini carte
+  if (a.lat && a.lng && document.getElementById('miniMap')) {
+    setTimeout(() => {
+      const mm = L.map('miniMap', { center:[a.lat,a.lng], zoom:14, zoomControl:false, scrollWheelZoom:false });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mm);
+      const ico = L.divIcon({
+        className:'',
+        html:`<div style="width:12px;height:12px;background:var(--accent);border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 4px rgba(200,90,60,.2)"></div>`,
+        iconSize:[12,12], iconAnchor:[6,6]
+      });
+      L.marker([a.lat,a.lng],{icon:ico}).addTo(mm);
+    }, 200);
+  }
+
+  // Widget période jour/nuit
+  const widgetPeriode = document.getElementById('widgetPeriode');
+  if (a.periode === 'jour_et_nuit') {
+    if (widgetPeriode) widgetPeriode.style.display = '';
+    selectWidgetPeriode('jour'); // défaut jour
+  } else {
+    if (widgetPeriode) widgetPeriode.style.display = 'none';
+    const p = a.periode || 'jour';
+    window._periodeWidget = p;
+    updateWidgetCreneaux(p);
+  }
+  // Favori state
+  checkFavoriState(a.id);
+}
+
+// ============ WIDGET ============
+function changeNb(delta) {
+  const max = (window._act && window._act.capacite) ? window._act.capacite : 20;
+  window._nb = Math.max(1, Math.min(max, (window._nb||1) + delta));
+  document.getElementById('nbDisplay').textContent = window._nb;
+  updateWidgetPrice();
+}
+
+function updateWidgetPrice() {
+  if (!window._prixAff) return;
+  const nb = window._nb || 1;
+  const opts = [...(document.querySelectorAll('#optionsList input:checked')||[])];
+  const optsTotal = opts.reduce((s,o)=>s+parseInt(o.value),0);
+  const base = window._prixAff * nb;
+  const total = base + optsTotal;
+  const l = document.getElementById('bkLineBase');
+  const lv = document.getElementById('bkLineBaseVal');
+  const lo = document.getElementById('bkLineOpts');
+  const lov = document.getElementById('bkLineOptsVal');
+  const t = document.getElementById('bkTotal');
+  if(l) l.textContent = `${nb} × ${window._prixAff.toLocaleString('fr-FR')} FCFA`;
+  if(lv) lv.textContent = `${base.toLocaleString('fr-FR')} FCFA`;
+  if(lo) lo.style.display = optsTotal > 0 ? '' : 'none';
+  if(lov) lov.textContent = `${optsTotal.toLocaleString('fr-FR')} FCFA`;
+  if(t) t.textContent = `${total.toLocaleString('fr-FR')} FCFA`;
+}
+
+function checkDispo(date) {
+  const msg = document.getElementById('dispoMsg');
+  if (!msg) return;
+  if (window._unavailableDates && window._unavailableDates.includes(date)) {
+    msg.style.display = '';
+    msg.style.color = 'var(--error)';
+    msg.textContent = 'Cette date est indisponible';
+    document.getElementById('bkBtn').disabled = true;
+  } else {
+    msg.style.display = date ? '' : 'none';
+    msg.style.color = 'var(--success)';
+    msg.textContent = date ? 'Date disponible' : '';
+    document.getElementById('bkBtn').disabled = false;
+  }
+}
+
+// ── Période sélectionnée dans le widget ──
+window._periodeWidget = 'jour';
+
+function selectWidgetPeriode(p) {
+  window._periodeWidget = p;
+  const btnJour = document.getElementById('bkBtnJour');
+  const btnNuit = document.getElementById('bkBtnNuit');
+  if (btnJour) {
+    btnJour.style.borderColor  = p === 'jour' ? 'var(--gold)' : 'var(--line-2)';
+    btnJour.style.background   = p === 'jour' ? 'var(--gold-lt)' : 'var(--white)';
+    btnJour.style.color        = p === 'jour' ? 'var(--gold)' : 'var(--ink-3)';
+  }
+  if (btnNuit) {
+    btnNuit.style.borderColor  = p === 'nuit' ? 'var(--teal)' : 'var(--line-2)';
+    btnNuit.style.background   = p === 'nuit' ? 'var(--teal-lt)' : 'var(--white)';
+    btnNuit.style.color        = p === 'nuit' ? 'var(--teal)' : 'var(--ink-3)';
+  }
+  // Mettre à jour les créneaux horaires disponibles
+  updateWidgetCreneaux(p);
+}
+
+function updateWidgetCreneaux(periode) {
+  const act = window._act;
+  const sel = document.getElementById('bkHeure');
+  if (!sel || !act) return;
+  const DEFAUT_JOUR = ['06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00'];
+  const DEFAUT_NUIT = ['18:00','19:00','20:00','21:00','22:00','23:00','00:00'];
+  const list = periode === 'nuit'
+    ? (act.creneaux_nuit?.length ? act.creneaux_nuit : DEFAUT_NUIT)
+    : (act.creneaux_jour?.length ? act.creneaux_jour : DEFAUT_JOUR);
+  sel.innerHTML = '<option value="">Choisir un horaire</option>' +
+    list.map(h => `<option value="${h}">${h}</option>`).join('');
+}
+
+function goReserver(id) {
+  const date    = document.getElementById('bkDate')?.value;
+  const heure   = document.getElementById('bkHeure')?.value;
+  const nb      = window._nb || 1;
+  const periode = window._periodeWidget || 'jour';
+  const opts    = [...(document.querySelectorAll('#optionsList input:checked')||[])]
+    .map(o=>o.dataset.label).join(',');
+  if (!date)  { showToast('Choisissez une date', 'error'); return; }
+  if (!heure) { showToast('Choisissez un horaire', 'error'); return; }
+  const params = new URLSearchParams({ id, date, heure, nb, periode, opts });
+  window.location.href = `reservation.html?${params}`;
+}
+
+function switchMainImg(src, el) {
+  document.getElementById('mainImg').src = src;
+}
+
+// ============ AVIS ============
+let _selectedNote = 0;
+function selectNote(n) {
+  _selectedNote = n;
+  document.querySelectorAll('.note-btn').forEach(b => {
+    b.classList.toggle('btn-primary', parseInt(b.dataset.val) <= n);
+    b.classList.toggle('btn-outline', parseInt(b.dataset.val) > n);
+  });
+}
+
+async function submitAvis(activiteId) {
+  const texte = document.getElementById('avisTexte')?.value.trim();
+  if (!_selectedNote) { showToast('Sélectionnez une note', 'error'); return; }
+  if (!texte || texte.length < 10) { showToast('Avis trop court (min. 10 caractères)', 'error'); return; }
+  try {
+    const { Avis, Auth } = window.DakarApp;
+    const user = await Auth.getUser();
+    if (!user) { showToast('Connectez-vous pour laisser un avis', 'info'); window.location.href='auth.html'; return; }
+    await Avis.soumettre(activiteId, _selectedNote, texte);
+    showToast('Avis soumis — il sera publié après vérification.', 'success');
+    document.getElementById('avisTexte').value = '';
+    _selectedNote = 0;
+    document.querySelectorAll('.note-btn').forEach(b=>b.classList.replace('btn-primary','btn-outline'));
+  } catch(e) {
+    showToast(e.message || 'Erreur lors de la soumission', 'error');
+  }
+}
+
+// ============ FAVORIS ============
+async function checkFavoriState(id) {
+  try {
+    const { Auth, Activites } = window.DakarApp;
+    const user = await Auth.getUser();
+    if (!user) return;
+    const ids = await Activites.getFavorisIds(user.id);
+    if (ids.includes(id)) {
+      document.getElementById('favIcon').className = 'ti ti-heart-filled';
+      document.getElementById('favBtn').style.color = 'var(--accent)';
+    }
+  } catch(e) {}
+}
+
+async function toggleFavori(id) {
+  try {
+    const { Auth, Activites } = window.DakarApp;
+    const user = await Auth.getUser();
+    if (!user) { showToast('Connectez-vous pour sauvegarder', 'info'); window.location.href='auth.html'; return; }
+    const added = await Activites.toggleFavori(user.id, id);
+    const icon = document.getElementById('favIcon');
+    icon.className = added ? 'ti ti-heart-filled' : 'ti ti-heart';
+    document.getElementById('favBtn').style.color = added ? 'var(--accent)' : '';
+    const favBtn = document.getElementById('favBtn');
+    favBtn.classList.remove('pop');
+    void favBtn.offsetWidth;
+    favBtn.classList.add('pop');
+    showToast(added ? 'Ajouté aux favoris' : 'Retiré des favoris', added ? 'success' : 'info');
+  } catch(e) { showToast('Erreur', 'error'); }
+}
+
+function partager() {
+  if (navigator.share) {
+    navigator.share({ title: document.title, url: window.location.href });
+  } else {
+    navigator.clipboard?.writeText(window.location.href);
+    showToast('Lien copié !', 'success');
+  }
+}
+
+// ============ INIT ============
+async function init() {
+  const id = getActivityId();
+  if (!id) { window.location.href='index.html'; return; }
+
+  try {
+    const { Activites, Auth } = window.DakarApp;
+
+    // Auth navbar
+    const user = await Auth.getUser().catch(()=>null);
+    if (user) {
+      const init = (user.user_metadata?.prenom || user.email || 'U')[0].toUpperCase();
+      document.getElementById('navUserArea').innerHTML =
+        `<a href="espace-utilisateur.html"><div class="nav-avatar">${init}</div></a>`;
+    }
+
+    // Charger l'activité
+    const activite = await Activites.getById(id);
+    renderDetail(activite);
+
+  } catch(e) {
+    console.error('Erreur chargement activité :', e);
+    window.location.href = '404.html';
+  }
+}
+
+// Navbar scroll + hamburger
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20);
+});
+document.getElementById('hamburger').addEventListener('click', () => {
+  const open = document.getElementById('mobileNav').classList.toggle('open');
+  document.getElementById('hamburger').setAttribute('aria-expanded', open);
+});
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

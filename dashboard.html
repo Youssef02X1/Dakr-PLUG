@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Admin — Dakar PLUG</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<!-- GARDE ADMIN (affiché pendant la vérification) -->
+<div id="adminGuard" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--ink)">
+  <div style="text-align:center;color:#fff">
+    <div class="spinner" style="margin:0 auto 16px;border-top-color:var(--accent)"></div>
+    <p style="font-size:13px;color:rgba(255,255,255,.4)">Vérification des droits…</p>
+  </div>
+</div>
+
+<!-- ACCÈS REFUSÉ -->
+<div id="accessDenied" style="display:none;min-height:100vh;align-items:center;justify-content:center">
+  <div style="text-align:center;padding:40px">
+    <div style="width:56px;height:56px;border-radius:50%;background:var(--paper-2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
+      <i class="ti ti-lock" style="font-size:22px;color:var(--ink-3)"></i>
+    </div>
+    <h2 style="font-family:var(--font-display);font-size:1.5rem;font-weight:300;margin-bottom:8px">Accès restreint</h2>
+    <p style="color:var(--ink-3);margin-bottom:24px;font-size:14px">Cette zone est réservée à l'administrateur.</p>
+    <a href="index.html" class="btn btn-primary">Retour à l'accueil</a>
+  </div>
+</div>
+
+<!-- DASHBOARD PRINCIPAL -->
+<div id="dashboardMain" style="display:none">
+
+  <!-- SIDEBAR -->
+  <aside style="position:fixed;top:0;left:0;bottom:0;width:232px;background:var(--ink);z-index:100;display:flex;flex-direction:column;overflow-y:auto">
+    <div style="padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.07)">
+      <div class="nav-logo" style="color:#fff;margin-bottom:4px"><span style="color:var(--accent)">Dakar</span>PLUG</div>
+      <div style="font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.3)">Administration</div>
+    </div>
+
+    <nav style="padding:16px 12px;flex:1">
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:2px">
+        <li>
+          <a href="#" class="dash-link active" data-section="overview" onclick="showSection('overview',this);return false">
+            <i class="ti ti-layout-dashboard" style="font-size:15px"></i> Vue d'ensemble
+          </a>
+        </li>
+        <li>
+          <a href="#" class="dash-link" data-section="reservations" onclick="showSection('reservations',this);return false">
+            <i class="ti ti-calendar-check" style="font-size:15px"></i> Réservations
+            <span id="badgeResas" class="badge badge-accent" style="margin-left:auto;font-size:10px;padding:2px 6px">0</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="dash-link" data-section="annonces" onclick="showSection('annonces',this);return false">
+            <i class="ti ti-compass" style="font-size:15px"></i> Annonces
+          </a>
+        </li>
+        <li>
+          <a href="#" class="dash-link" data-section="nouvelle" onclick="showSection('nouvelle',this);return false">
+            <i class="ti ti-circle-plus" style="font-size:15px"></i> Nouvelle annonce
+          </a>
+        </li>
+        <li>
+          <a href="#" class="dash-link" data-section="avis" onclick="showSection('avis',this);return false">
+            <i class="ti ti-star" style="font-size:15px"></i> Avis clients
+          </a>
+        </li>
+        <li>
+          <a href="#" class="dash-link" data-section="revenus" onclick="showSection('revenus',this);return false">
+            <i class="ti ti-chart-bar" style="font-size:15px"></i> Revenus
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div style="padding:16px 20px;border-top:1px solid rgba(255,255,255,.07)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div style="width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0">A</div>
+        <div>
+          <div style="font-size:12px;font-weight:500;color:#fff">Administrateur</div>
+          <div id="adminEmailLabel" style="font-size:11px;color:rgba(255,255,255,.35)">—</div>
+        </div>
+      </div>
+      <a href="index.html" style="font-size:12px;color:rgba(255,255,255,.35);display:flex;align-items:center;gap:6px;transition:color .15s"
+         onmouseover="this.style.color='rgba(255,255,255,.75)'" onmouseout="this.style.color='rgba(255,255,255,.35)'">
+        <i class="ti ti-arrow-left" style="font-size:12px"></i> Voir le site
+      </a>
+    </div>
+  </aside>
+
+  <!-- CONTENU -->
+  <main style="margin-left:232px;padding:36px;min-height:100vh;background:var(--paper)">
+
+    <!-- ─── VUE D'ENSEMBLE ─── -->
+    <section id="sectionOverview" class="dash-section">
+      <div class="dash-header">
+        <div>
+          <h1 style="font-family:var(--font-display);font-size:1.8rem;font-weight:300;letter-spacing:-.02em">Vue d'ensemble</h1>
+          <p style="color:var(--ink-3);font-size:13px;margin-top:2px" id="dateLabel"></p>
+        </div>
+        <button class="btn btn-primary" onclick="showSection('nouvelle',null)">
+          <i class="ti ti-plus" style="font-size:14px"></i> Nouvelle annonce
+        </button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card stat-coral">
+          <div class="stat-label">Réservations totales</div>
+          <div class="stat-value" id="stTotal">—</div>
+          <div class="stat-sub">En attente : <span id="stAttente">—</span></div>
+        </div>
+        <div class="stat-card stat-success">
+          <div class="stat-label">Revenus confirmés</div>
+          <div class="stat-value" id="stRevenus">—</div>
+          <div class="stat-sub">Confirmées : <span id="stConfirmees">—</span></div>
+        </div>
+        <div class="stat-card stat-ocean">
+          <div class="stat-label">Activités en ligne</div>
+          <div class="stat-value" id="stActives">—</div>
+          <div class="stat-sub">Publiées</div>
+        </div>
+        <div class="stat-card stat-gold">
+          <div class="stat-label">Avis en attente</div>
+          <div class="stat-value" id="stAvis">—</div>
+          <div class="stat-sub">À valider</div>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <div class="dash-panel">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+            <h2 class="dash-panel-title" style="margin:0">Dernières réservations</h2>
+            <button class="btn btn-ghost btn-sm" onclick="showSection('reservations',null)">Voir tout</button>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="dash-table">
+              <thead>
+                <tr>
+                  <th>Client</th><th>Activité</th><th>Date</th><th>Montant</th><th>Statut</th><th></th>
+                </tr>
+              </thead>
+              <tbody id="tbLastResas"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="dash-panel">
+          <h2 class="dash-panel-title">Activités populaires</h2>
+          <div id="topActList" style="display:flex;flex-direction:column;gap:10px"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── RÉSERVATIONS ─── -->
+    <section id="sectionReservations" class="dash-section" style="display:none">
+      <div class="dash-header">
+        <h1 style="font-family:var(--font-display);font-size:1.8rem;font-weight:300;letter-spacing:-.02em">Réservations</h1>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select class="filter-select" id="filterResaStatut" onchange="renderResas()">
+            <option value="">Tous les statuts</option>
+            <option value="en_attente">En attente</option>
+            <option value="confirmee">Confirmées</option>
+            <option value="annulee">Annulées</option>
+          </select>
+        </div>
+      </div>
+      <div class="dash-panel">
+        <div style="overflow-x:auto">
+          <table class="dash-table">
+            <thead>
+              <tr>
+                <th>Réf.</th><th>Client</th><th>Activité</th><th>Date</th>
+                <th>Pers.</th><th>Montant</th><th>Paiement</th><th>Statut</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tbResas"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── ANNONCES ─── -->
+    <section id="sectionAnnonces" class="dash-section" style="display:none">
+      <div class="dash-header">
+        <h1 style="font-family:var(--font-display);font-size:1.8rem;font-weight:300;letter-spacing:-.02em">Annonces</h1>
+        <button class="btn btn-primary" onclick="showSection('nouvelle',null)">
+          <i class="ti ti-plus" style="font-size:14px"></i> Nouvelle annonce
+        </button>
+      </div>
+      <div class="dash-panel">
+        <div id="annoncesGrid" class="annonce-grid"></div>
+      </div>
+    </section>
+
+    <!-- ─── NOUVELLE ANNONCE ─── -->
+    <section id="sectionNouvelle" class="dash-section" style="display:none">
+      <div class="dash-header">
+        <h1 id="formTitle" style="font-family:var(--font-display);font-size:1.8rem;font-weight:300;letter-spacing:-.02em">
+          Nouvelle annonce
+        </h1>
+      </div>
+      <div class="dash-panel" style="max-width:740px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:0">
+
+          <div class="field" style="grid-column:1/-1">
+            <label for="fNom">Nom de l'activité *</label>
+            <input type="text" id="fNom" placeholder="Ex: Sortie kayak plage de Yoff" maxlength="100" aria-required="true">
+          </div>
+
+          <div class="field">
+            <label for="fCat">Catégorie *</label>
+            <select id="fCat" aria-required="true">
+              <option value="">Sélectionner</option>
+              <option value="kayak">Kayak</option>
+              <option value="jetski">Jet ski</option>
+              <option value="quad">Quad</option>
+              <option value="plage">Plage</option>
+              <option value="cinema">Cinéma</option>
+              <option value="sortie">Sortie</option>
+              <option value="location">Location</option>
+              <option value="plein_air">Plein air</option>
+              <option value="restaurant">Restaurant</option>
+              <option value="bons_plans">Bons plans</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="fZone">Zone *</label>
+            <select id="fZone" aria-required="true">
+              <option value="">Sélectionner</option>
+              <option value="Dakar">Dakar</option>
+              <option value="Ngor">Ngor</option>
+              <option value="Almadies">Almadies</option>
+              <option value="Yoff">Yoff</option>
+              <option value="Lac Rose">Lac Rose</option>
+              <option value="Saly">Saly</option>
+              <option value="Mbour">Mbour</option>
+              <option value="Petite Côte">Petite Côte</option>
+              <option value="Casamance">Casamance</option>
+              <option value="Île de Gorée">Île de Gorée</option>
+              <option value="Delta du Saloum">Delta du Saloum</option>
+              <option value="Mar Lodj">Mar Lodj</option>
+              <option value="Foundiougne">Foundiougne</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="fPrix">Prix de base (FCFA) *</label>
+            <input type="number" id="fPrix" placeholder="25000" min="0" max="9999999" aria-required="true">
+          </div>
+
+          <div class="field">
+            <label for="fPromo">Promotion (%)</label>
+            <input type="number" id="fPromo" placeholder="0" min="0" max="90">
+          </div>
+
+          <div class="field">
+            <label for="fDuree">Durée</label>
+            <input type="text" id="fDuree" placeholder="Ex: 2h30" maxlength="20">
+          </div>
+
+          <div class="field">
+            <label for="fCapacite">Capacité max (personnes)</label>
+            <input type="number" id="fCapacite" placeholder="10" min="1" max="999">
+          </div>
+
+          <div class="field">
+            <label for="fNiveau">Niveau requis</label>
+            <select id="fNiveau">
+              <option value="Tout public">Tout public</option>
+              <option value="Débutant">Débutant</option>
+              <option value="Intermédiaire">Intermédiaire</option>
+              <option value="Expert">Expert</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="fPeriode">Disponibilité</label>
+            <select id="fPeriode" onchange="toggleCreneaux(this.value)">
+              <option value="jour">Journée uniquement</option>
+              <option value="nuit">Soirée / Nuit uniquement</option>
+              <option value="jour_et_nuit">Journée ET Soirée / Nuit</option>
+            </select>
+            <span class="field-hint">Détermine quand l'activité est proposée</span>
+          </div>
+
+          <!-- CRÉNEAUX JOUR -->
+          <div class="field" style="grid-column:1/-1" id="creneauxJourBlock">
+            <label style="font-size:12px;font-weight:500;color:var(--ink-2);display:block;margin-bottom:8px">
+              Créneaux Journée
+              <span style="font-size:11px;font-weight:400;color:var(--gold);margin-left:6px">☀</span>
+            </label>
+            <div id="creneauxJourGrid" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
+            <div style="display:flex;gap:8px;margin-top:4px">
+              <input type="time" id="newCreneauJour" style="flex:1;max-width:120px">
+              <button type="button" class="btn btn-outline btn-sm" onclick="addCreneau('jour')">
+                <i class="ti ti-plus" style="font-size:12px"></i> Ajouter
+              </button>
+            </div>
+            <span class="field-hint">Cliquez sur un créneau pour le supprimer</span>
+          </div>
+
+          <!-- CRÉNEAUX NUIT -->
+          <div class="field" style="grid-column:1/-1" id="creneauxNuitBlock">
+            <label style="font-size:12px;font-weight:500;color:var(--ink-2);display:block;margin-bottom:8px">
+              Créneaux Soirée / Nuit
+              <span style="font-size:11px;font-weight:400;color:var(--teal);margin-left:6px">🌙</span>
+            </label>
+            <div id="creneauxNuitGrid" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
+            <div style="display:flex;gap:8px;margin-top:4px">
+              <input type="time" id="newCreneauNuit" style="flex:1;max-width:120px">
+              <button type="button" class="btn btn-outline btn-sm" onclick="addCreneau('nuit')">
+                <i class="ti ti-plus" style="font-size:12px"></i> Ajouter
+              </button>
+            </div>
+            <span class="field-hint">Cliquez sur un créneau pour le supprimer</span>
+          </div>
+
+          <div class="field" style="grid-column:1/-1">
+            <label for="fAdresse">Adresse / Lieu précis</label>
+            <input type="text" id="fAdresse" placeholder="Ex: Plage de Yoff, face au marché" maxlength="200">
+          </div>
+
+          <div class="field">
+            <label for="fLat">Latitude (GPS)</label>
+            <input type="number" id="fLat" placeholder="14.7167" step="0.0001">
+            <span class="field-hint">Google Maps → clic droit → coordonnées</span>
+          </div>
+
+          <div class="field">
+            <label for="fLng">Longitude (GPS)</label>
+            <input type="number" id="fLng" placeholder="-17.4677" step="0.0001">
+          </div>
+
+          <div class="field" style="grid-column:1/-1">
+            <label for="fDesc">Description *</label>
+            <textarea id="fDesc" rows="4" placeholder="Décrivez l'activité en détail…" maxlength="1000" aria-required="true"></textarea>
+            <span class="field-hint" id="descCount">0 / 1000 caractères</span>
+          </div>
+
+          <!-- UPLOAD PHOTO -->
+          <div style="grid-column:1/-1">
+            <label style="font-size:12px;font-weight:500;color:var(--ink-2);display:block;margin-bottom:8px">
+              Photo principale *
+            </label>
+
+            <!-- Upload depuis l'ordinateur -->
+            <div style="border:1.5px dashed var(--line-2);border-radius:var(--r-md);padding:20px;text-align:center;cursor:pointer;transition:.15s;position:relative"
+                 id="dropZone"
+                 onclick="document.getElementById('fileInput').click()"
+                 ondragover="event.preventDefault();this.style.borderColor='var(--teal)'"
+                 ondragleave="this.style.borderColor='var(--line-2)'"
+                 ondrop="handleDrop(event)">
+              <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="handleFile(this.files[0])">
+              <div id="dropContent">
+                <i class="ti ti-upload" style="font-size:24px;color:var(--ink-4);display:block;margin-bottom:8px"></i>
+                <p style="font-size:13px;color:var(--ink-3)">Glissez une image ou <span style="color:var(--teal);font-weight:500">cliquez pour choisir</span></p>
+                <p style="font-size:11px;color:var(--ink-4);margin-top:4px">JPG, PNG, WebP — max 5 Mo</p>
+              </div>
+              <div id="uploadProgress" style="display:none">
+                <div class="spinner" style="margin:0 auto 8px"></div>
+                <p style="font-size:13px;color:var(--ink-3)">Upload en cours…</p>
+              </div>
+              <div id="previewBox" style="display:none">
+                <img id="imgPreview" src="" alt="Aperçu" style="max-height:120px;border-radius:var(--r-sm);margin:0 auto">
+                <p style="font-size:12px;color:var(--success);margin-top:8px;display:flex;align-items:center;justify-content:center;gap:4px">
+                  <i class="ti ti-check" style="font-size:12px"></i> Image uploadée
+                </p>
+              </div>
+            </div>
+
+            <!-- OU url manuelle -->
+            <div style="display:flex;align-items:center;gap:10px;margin:12px 0">
+              <div style="flex:1;height:1px;background:var(--line)"></div>
+              <span style="font-size:12px;color:var(--ink-4)">ou coller une URL</span>
+              <div style="flex:1;height:1px;background:var(--line)"></div>
+            </div>
+            <div class="field">
+              <input type="url" id="fImage" placeholder="https://…" maxlength="500"
+                     oninput="previewUrl(this.value)" aria-label="URL de l'image">
+            </div>
+          </div>
+
+          <!-- OPTIONS -->
+          <div style="grid-column:1/-1">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+              <label style="font-size:12px;font-weight:500;color:var(--ink-2)">Options supplémentaires</label>
+              <button type="button" class="btn btn-outline btn-sm" onclick="addOption()">
+                <i class="ti ti-plus" style="font-size:12px"></i> Ajouter
+              </button>
+            </div>
+            <div id="optionRows" style="display:flex;flex-direction:column;gap:8px"></div>
+          </div>
+
+          <!-- PUBLICATION -->
+          <div style="grid-column:1/-1;display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:14px;background:var(--paper-2);border-radius:var(--r-sm)">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+              <input type="checkbox" id="fBonsPlans">
+              Mettre en avant (Bons plans)
+            </label>
+            <div style="display:flex;align-items:center;gap:8px">
+              <label class="toggle" aria-label="Publier">
+                <input type="checkbox" id="fPubliee" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="font-size:13px;font-weight:500">Publier immédiatement</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="divider"></div>
+
+        <div id="formError" style="display:none;padding:10px 14px;background:rgba(160,40,40,.07);border-radius:var(--r-xs);font-size:13px;color:var(--error);margin-bottom:14px" role="alert"></div>
+
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-outline" onclick="showSection('annonces',null)" type="button">Annuler</button>
+          <button class="btn btn-accent btn-lg" style="flex:1" onclick="saveAnnonce()" id="btnSave" type="button">
+            <i class="ti ti-check" style="font-size:14px"></i> Publier l'annonce
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── AVIS ─── -->
+    <section id="sectionAvis" class="dash-section" style="display:none">
+      <div class="dash-header">
+        <h1 style="font-family:var(--font-display);font-size:1.8rem;font-weight:300;letter-spacing:-.02em">Avis clients</h1>
+      </div>
+      <div class="dash-panel">
+        <div style="overflow-x:auto">
+          <table class="dash-table">
+            <thead>
+              <tr><th>Client</th><th>Activité</th><th>Note</th><th>Avis</th><th>Date</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="tbAvis"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── REVENUS ─── -->
+    <section id="sectionRevenus" class="dash-section" style="display:none">
+      <div class="dash-header">
+        <h1 style="font-family:var(--font-display);font-size:1.8rem;font-weight:300;letter-spacing:-.02em">Revenus</h1>
+      </div>
+      <div class="stats-grid" style="margin-bottom:28px">
+        <div class="stat-card stat-success"><div class="stat-label">Total</div><div class="stat-value" id="revTotal">—</div></div>
+        <div class="stat-card stat-coral"><div class="stat-label">Ticket moyen</div><div class="stat-value" id="revMoyen">—</div></div>
+        <div class="stat-card stat-ocean"><div class="stat-label">Taux confirmation</div><div class="stat-value" id="revTaux">—</div></div>
+      </div>
+      <div class="dash-panel">
+        <h2 class="dash-panel-title">Par activité</h2>
+        <div style="overflow-x:auto">
+          <table class="dash-table">
+            <thead>
+              <tr><th>Activité</th><th>Réservations</th><th>Confirmées</th><th>Revenus</th></tr>
+            </thead>
+            <tbody id="tbRevenus"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- MODAL CONFIRMER RÉSERVATION -->
+<div class="modal-overlay" id="modalConfirm" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modalConfirm')"><i class="ti ti-x" style="font-size:13px"></i></button>
+    <h2 id="confirmTitle" style="font-family:var(--font-display);font-size:1.2rem;font-weight:300;margin-bottom:16px">Confirmer la réservation</h2>
+    <div id="confirmContent" style="font-size:13px;color:var(--ink-2);margin-bottom:20px;line-height:1.7"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-outline" style="flex:1" onclick="closeModal('modalConfirm')">Annuler</button>
+      <button class="btn btn-primary" style="flex:1" id="btnDoConfirm">Confirmer</button>
+    </div>
+  </div>
+</div>
+
+<style>
+.dash-section { animation: fadeIn .25s ease; }
+.dash-link {
+  display:flex;align-items:center;gap:10px;padding:9px 12px;
+  border-radius:var(--r-xs);font-size:13px;color:rgba(255,255,255,.55);
+  transition:.15s;text-decoration:none;
+}
+.dash-link:hover { color:rgba(255,255,255,.85);background:rgba(255,255,255,.05); }
+.dash-link.active { color:var(--accent);background:rgba(200,90,60,.12); }
+</style>
+
+<script src="notifications.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+// SÉCURITÉ — Anti-XSS
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');
+}
+function safeUrl(u) { return (u && /^https?:\/\//i.test(u)) ? u : ''; }
+
+let _resas = [];
+let _acts  = [];
+let _resaToConfirm = null;
+
+// ─────────────────────────────
+//  UTILITAIRES
+// ─────────────────────────────
+function showToast(msg, type='info') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.textContent = msg;
+  t.setAttribute('role','alert');
+  c.appendChild(t);
+  setTimeout(()=>t.remove(), 4000);
+}
+function statusLabel(s) {
+  return {confirmee:'Confirmée',en_attente:'En attente',annulee:'Annulée'}[s]||s;
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.getElementById('modalConfirm').addEventListener('click', function(e) {
+  if (e.target===this) closeModal('modalConfirm');
+});
+
+// ─────────────────────────────
+//  NAVIGATION SECTIONS
+// ─────────────────────────────
+function showSection(name, linkEl) {
+  document.querySelectorAll('.dash-section').forEach(s=>s.style.display='none');
+  const sectionMap = {
+    overview:'Overview', reservations:'Reservations', annonces:'Annonces',
+    nouvelle:'Nouvelle', avis:'Avis', revenus:'Revenus'
+  };
+  const el = document.getElementById(`section${sectionMap[name]}`);
+  if (el) el.style.display = '';
+
+  document.querySelectorAll('.dash-link').forEach(l=>l.classList.remove('active'));
+  const active = linkEl || document.querySelector(`[data-section="${name}"]`);
+  if (active) active.classList.add('active');
+
+  // Charge les données pour la section
+  if (name==='overview')     renderOverview();
+  if (name==='reservations') renderResas();
+  if (name==='annonces')     renderAnnonces();
+  if (name==='avis')         renderAvis();
+  if (name==='revenus')      renderRevenus();
+  if (name==='nouvelle')     resetForm();
+}
+
+// ─────────────────────────────
+//  OVERVIEW
+// ─────────────────────────────
+async function renderOverview() {
+  try {
+    const { Admin } = window.DakarApp;
+    const stats = await Admin.getStats();
+    document.getElementById('stTotal').textContent      = stats.totalResa||0;
+    document.getElementById('stAttente').textContent    = stats.resaEnAttente||0;
+    document.getElementById('stRevenus').textContent    = `${(stats.totalRevenus||0).toLocaleString('fr-FR')} FCFA`;
+    document.getElementById('stConfirmees').textContent = stats.resaConfirmees||0;
+    document.getElementById('stActives').textContent    = stats.totalAct||0;
+    document.getElementById('badgeResas').textContent   = stats.resaEnAttente||0;
+    // Avis en attente
+    const avis = await window.DakarApp.Avis.getTousAdmin();
+    document.getElementById('stAvis').textContent = avis.filter(a=>!a.verifie).length;
+    _resas = await window.DakarApp.Reservations.getToutes();
+    _acts  = await window.DakarApp.Activites.getAllAdmin();
+  } catch(e) {
+    console.error('Erreur chargement overview :', e);
+    showToast('Impossible de charger les statistiques. Vérifiez la configuration Supabase.', 'error');
+  }
+
+  // Dernières réservations (5)
+  document.getElementById('tbLastResas').innerHTML = _resas.slice(0,5).map(r=>`
+    <tr>
+      <td style="font-weight:500">${esc(r.profiles?.prenom||'')} ${esc(r.profiles?.nom||'')}</td>
+      <td style="font-size:13px">${esc(r.activites?.nom||r.activite_nom||'—')}</td>
+      <td style="font-size:13px">${r.date||'—'}</td>
+      <td><strong style="color:var(--accent)">${(r.montant_total||0).toLocaleString('fr-FR')} FCFA</strong></td>
+      <td><span class="resa-status ${r.statut}">${statusLabel(r.statut)}</span></td>
+      <td>
+        ${r.statut==='en_attente'?`
+          <button class="btn btn-sm" style="background:rgba(42,122,82,.1);color:var(--success);padding:4px 10px"
+                  onclick="confirmResa(${r.id},this.closest('tr'))">Confirmer</button>
+        `:''}
+      </td>
+    </tr>
+  `).join('');
+
+  // Top activités
+  const sorted = [..._acts].sort((a,b)=>(b.nb_avis||0)-(a.nb_avis||0)).slice(0,4);
+  document.getElementById('topActList').innerHTML = sorted.map(a=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)">
+      <img src="${safeUrl(a.image_principale)}" alt="${esc(a.nom)}" style="width:42px;height:42px;border-radius:var(--r-sm);object-fit:cover;flex-shrink:0" loading="lazy">
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500">${esc(a.nom)}</div>
+        <div style="font-size:12px;color:var(--ink-3)">${a.nb_avis||0} avis</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:13px;font-weight:600">${(a.prix||0).toLocaleString('fr-FR')} FCFA</div>
+        ${a.note>0?`<div style="font-size:11px;color:var(--gold)">★ ${a.note}</div>`:''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ─────────────────────────────
+//  RÉSERVATIONS
+// ─────────────────────────────
+async function renderResas() {
+  try {
+    const { Reservations } = window.DakarApp;
+    _resas = await Reservations.getToutes();
+  } catch(e) {
+    console.error('Erreur chargement réservations :', e);
+    showToast('Impossible de charger les réservations.', 'error');
+  }
+
+  const filtre = document.getElementById('filterResaStatut')?.value;
+  const list = filtre ? _resas.filter(r=>r.statut===filtre) : _resas;
+
+  document.getElementById('tbResas').innerHTML = list.length ? list.map(r=>`
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:var(--ink-3)">${(r.qr_token||'').slice(0,8).toUpperCase()}</td>
+      <td>
+        <div style="font-weight:500;font-size:13px">${esc(r.profiles?.prenom||'')} ${esc(r.profiles?.nom||'')}</div>
+        <div style="font-size:11px;color:var(--ink-3)">${esc(r.profiles?.telephone||r.tel||'')}</div>
+      </td>
+      <td style="font-size:13px">${esc(r.activites?.nom||r.activite_nom||'—')}</td>
+      <td style="font-size:13px">${r.date||'—'} ${r.heure||''}</td>
+      <td style="text-align:center">${r.nb_personnes||1}</td>
+      <td><strong style="color:var(--accent)">${(r.montant_total||0).toLocaleString('fr-FR')} FCFA</strong></td>
+      <td style="font-size:12px;text-transform:capitalize">${r.methode_paiement||'—'}</td>
+      <td><span class="resa-status ${r.statut}">${statusLabel(r.statut)}</span></td>
+      <td>
+        <div style="display:flex;gap:4px">
+          ${r.statut==='en_attente'?`
+            <button class="btn btn-sm" style="background:rgba(42,122,82,.1);color:var(--success);padding:5px 8px"
+                    onclick="openConfirmModal(${r.id})"
+                    aria-label="Confirmer">
+              <i class="ti ti-check" style="font-size:12px"></i>
+            </button>
+          `:''}
+          <button class="btn btn-outline btn-sm" style="padding:5px 8px"
+                  onclick="whatsappClient(${r.id})"
+                  aria-label="WhatsApp">
+            <i class="ti ti-brand-whatsapp" style="font-size:12px"></i>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('') : `<tr><td colspan="9" style="text-align:center;color:var(--ink-3);padding:32px">Aucune réservation</td></tr>`;
+  document.getElementById('tbResas').classList.add('content-in');
+}
+
+function openConfirmModal(id) {
+  _resaToConfirm = id;
+  const r = _resas.find(x => x.id === id);
+  const client   = r ? `${r.profiles?.prenom||''} ${r.profiles?.nom||''}`.trim() : `#${id}`;
+  const activite = r ? (r.activites?.nom || r.activite_nom || '') : '';
+  document.getElementById('confirmContent').innerHTML =
+    `Confirmer la réservation de <strong>${esc(client)}</strong> pour <strong>${esc(activite)}</strong> ?<br>
+     <span style="font-size:12px;color:var(--ink-3);margin-top:6px;display:block">Le client sera notifié sur WhatsApp.</span>`;
+  document.getElementById('modalConfirm').classList.add('open');
+}
+
+document.getElementById('btnDoConfirm').onclick = async () => {
+  if (!_resaToConfirm) return;
+  try {
+    const { Reservations } = window.DakarApp;
+    await Reservations.confirmer(_resaToConfirm);
+  } catch(e) {
+    const r = _resas.find(x=>x.id===_resaToConfirm);
+    if (r) r.statut = 'confirmee';
+  }
+  closeModal('modalConfirm');
+  showToast('Réservation confirmée', 'success');
+  renderResas();
+  renderOverview();
+};
+
+// Confirmation rapide depuis overview
+function confirmResa(id, row) {
+  _resaToConfirm = id;
+  document.getElementById('confirmContent').textContent = `Confirmer la réservation #${id} ?`;
+  document.getElementById('modalConfirm').classList.add('open');
+}
+
+function whatsappClient(id) {
+  const r = _resas.find(x => x.id === id);
+  if (!r) { showToast('Réservation introuvable', 'error'); return; }
+  const { WHATSAPP_NUMBER } = window.DakarApp;
+  const tel = r.profiles?.telephone || '';
+  const nom = `${r.profiles?.prenom||''} ${r.profiles?.nom||''}`.trim();
+  const activite = r.activites?.nom || r.activite_nom || '';
+  if (!tel) { showToast('Numéro manquant', 'error'); return; }
+  const clean = tel.replace(/\D/g,'');
+  const num = clean.startsWith('221') ? clean : '221'+clean;
+  const msg = encodeURIComponent(`Bonjour ${nom}, votre réservation "${activite}" est confirmée. — Dakar PLUG`);
+  window.open(`https://wa.me/${num}?text=${msg}`, '_blank', 'noopener,noreferrer');
+}
+
+// ─────────────────────────────
+//  ANNONCES
+// ─────────────────────────────
+async function renderAnnonces() {
+  try {
+    const { Activites } = window.DakarApp;
+    _acts = await Activites.getAllAdmin();
+  } catch(e) {
+    console.error('Erreur chargement annonces :', e);
+    showToast('Impossible de charger les annonces.', 'error');
+  }
+
+  document.getElementById('annoncesGrid').innerHTML = _acts.length ? _acts.map(a=>`
+    <div class="annonce-item">
+      <img src="${safeUrl(a.image_principale)}" alt="${esc(a.nom)}" class="annonce-img" loading="lazy">
+      <div class="annonce-info">
+        <div class="annonce-name">${esc(a.nom)}</div>
+        <div class="annonce-meta">${esc(a.zone)} · ${(a.prix||0).toLocaleString('fr-FR')} FCFA</div>
+        <span class="resa-status ${a.publiee?'confirmee':'annulee'}" style="display:inline-block;margin-top:4px">
+          ${a.publiee?'En ligne':'Hors ligne'}
+        </span>
+      </div>
+      <div class="annonce-actions">
+        <button class="btn btn-outline btn-sm" onclick="editAnnonce(${a.id})" aria-label="Modifier ${esc(a.nom)}">
+          <i class="ti ti-pencil" style="font-size:12px"></i>
+        </button>
+        <label class="toggle" aria-label="Publier ${esc(a.nom)}">
+          <input type="checkbox" ${a.publiee?'checked':''} onchange="togglePub(${a.id},this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+        <button class="btn btn-sm" style="background:rgba(160,40,40,.08);color:var(--error);padding:6px 8px"
+                onclick="deleteAnnonce(${a.id})" aria-label="Supprimer ${esc(a.nom)}">
+          <i class="ti ti-trash" style="font-size:12px"></i>
+        </button>
+      </div>
+    </div>
+  `).join('') : `<div class="empty-state"><h3>Aucune annonce</h3><p>Créez votre première annonce.</p></div>`;
+  document.getElementById('annoncesGrid').classList.add('content-in');
+}
+
+async function togglePub(id, val) {
+  try {
+    const { Admin } = window.DakarApp;
+    await Admin.togglePublication(id, val);
+  } catch(e) {
+    const a = _acts.find(x=>x.id===id);
+    if (a) a.publiee = val;
+  }
+  showToast(val ? 'Annonce publiée' : 'Annonce dépubliée', 'success');
+}
+
+async function deleteAnnonce(id) {
+  const a = _acts.find(x => x.id === id);
+  const nom = a?.nom || `#${id}`;
+  if (!confirm(`Supprimer "${nom}" définitivement ?`)) return;
+  try {
+    const { Admin } = window.DakarApp;
+    await Admin.supprimerActivite(id);
+  } catch(e) {
+    const i = _acts.findIndex(a=>a.id===id);
+    if (i!==-1) _acts.splice(i,1);
+  }
+  showToast('Annonce supprimée', 'success');
+  renderAnnonces();
+}
+
+function editAnnonce(id) {
+  const a = _acts.find(x=>x.id===id);
+  if (!a) return;
+  showSection('nouvelle', null);
+  document.getElementById('formTitle').textContent = 'Modifier l\'annonce';
+  document.getElementById('fNom').value = a.nom||'';
+  document.getElementById('fCat').value = a.categorie||'';
+  document.getElementById('fZone').value = a.zone||'';
+  document.getElementById('fPrix').value = a.prix||'';
+  document.getElementById('fPromo').value = a.promo||'';
+  document.getElementById('fDuree').value = a.duree||'';
+  document.getElementById('fCapacite').value = a.capacite||'';
+  document.getElementById('fNiveau').value = a.niveau||'Tout public';
+  document.getElementById('fAdresse').value = a.adresse||'';
+  document.getElementById('fLat').value = a.lat||'';
+  document.getElementById('fLng').value = a.lng||'';
+  document.getElementById('fDesc').value = a.description||'';
+  document.getElementById('fImage').value = a.image_principale||'';
+  document.getElementById('fBonsPlans').checked = a.bons_plans||false;
+  document.getElementById('fPubliee').checked = a.publiee!==false;
+  // Restaurer période
+  document.getElementById('fPeriode').value = a.periode || 'jour';
+  toggleCreneaux(a.periode || 'jour');
+  // Restaurer créneaux
+  if (Array.isArray(a.creneaux_jour) && a.creneaux_jour.length) {
+    creneaux.jour = [...a.creneaux_jour];
+  }
+  if (Array.isArray(a.creneaux_nuit) && a.creneaux_nuit.length) {
+    creneaux.nuit = [...a.creneaux_nuit];
+  }
+  renderCreneaux('jour');
+  renderCreneaux('nuit');
+  if (a.image_principale) previewUrl(a.image_principale);
+  // Options
+  document.getElementById('optionRows').innerHTML = '';
+  (a.options||[]).forEach(opt => {
+    addOption(opt.label, opt.prix);
+  });
+  document.getElementById('btnSave').setAttribute('data-edit-id', id);
+  document.getElementById('btnSave').innerHTML = '<i class="ti ti-check" style="font-size:14px"></i> Enregistrer les modifications';
+}
+
+// ─────────────────────────────
+//  FORMULAIRE ANNONCE
+// ─────────────────────────────
+function resetForm() {
+  document.getElementById('formTitle').textContent = 'Nouvelle annonce';
+  ['fNom','fPrix','fPromo','fDuree','fCapacite','fAdresse','fLat','fLng','fDesc','fImage'].forEach(id=>{
+    document.getElementById(id).value='';
+  });
+  document.getElementById('fCat').value='';
+  document.getElementById('fZone').value='';
+  document.getElementById('fNiveau').value='Tout public';
+  document.getElementById('fBonsPlans').checked=false;
+  document.getElementById('fPubliee').checked=true;
+  document.getElementById('optionRows').innerHTML='';
+  // Réinitialiser créneaux
+  creneaux.jour = ['08:00','09:00','10:00','11:00','14:00','15:00','16:00','17:00'];
+  creneaux.nuit = ['18:00','19:00','20:00','21:00','22:00','23:00'];
+  document.getElementById('fPeriode').value = 'jour';
+  toggleCreneaux('jour');
+  renderCreneaux('jour');
+  renderCreneaux('nuit');
+  document.getElementById('formError').style.display='none';
+  document.getElementById('previewBox').style.display='none';
+  document.getElementById('dropContent').style.display='';
+  document.getElementById('btnSave').removeAttribute('data-edit-id');
+  document.getElementById('btnSave').innerHTML='<i class="ti ti-check" style="font-size:14px"></i> Publier l\'annonce';
+}
+
+function addOption(label='', prix='') {
+  const row = document.createElement('div');
+  row.style.cssText='display:flex;gap:8px;align-items:center';
+  row.innerHTML=`
+    <input type="text" placeholder="Label (ex: Guide privé)" maxlength="60" value="${label}"
+           style="flex:1" aria-label="Nom de l'option">
+    <input type="number" placeholder="Prix FCFA" min="0" value="${prix}"
+           style="width:130px" aria-label="Prix">
+    <button type="button" onclick="this.closest('div').remove()"
+            style="background:none;border:none;cursor:pointer;color:var(--error);font-size:18px;line-height:1"
+            aria-label="Supprimer">×</button>
+  `;
+  document.getElementById('optionRows').appendChild(row);
+}
+
+// Compteur description
+document.getElementById('fDesc')?.addEventListener('input', function() {
+  document.getElementById('descCount').textContent = `${this.value.length} / 1000 caractères`;
+});
+
+// Upload photo
+async function handleFile(file) {
+  if (!file) return;
+  if (!['image/jpeg','image/png','image/webp'].includes(file.type)) {
+    showToast('Format non supporté (JPG, PNG, WebP)', 'error'); return;
+  }
+  if (file.size > 5*1024*1024) { showToast('Image trop lourde (max 5 Mo)', 'error'); return; }
+
+  document.getElementById('dropContent').style.display='none';
+  document.getElementById('uploadProgress').style.display='';
+
+  try {
+    const { Storage } = window.DakarApp;
+    const url = await Storage.uploadImage(file);
+    document.getElementById('fImage').value = url;
+    document.getElementById('imgPreview').src = url;
+    document.getElementById('previewBox').style.display='';
+    document.getElementById('uploadProgress').style.display='none';
+    showToast('Image uploadée', 'success');
+  } catch(e) {
+    // Fallback : aperçu local sans upload
+    const reader = new FileReader();
+    reader.onload = ev => {
+      document.getElementById('fImage').value = ev.target.result;
+      document.getElementById('imgPreview').src = ev.target.result;
+      document.getElementById('previewBox').style.display='';
+      document.getElementById('uploadProgress').style.display='none';
+    };
+    reader.readAsDataURL(file);
+    showToast('Aperçu local (configurez Supabase Storage pour persister)', 'info');
+  }
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').style.borderColor='var(--line-2)';
+  const file = e.dataTransfer.files[0];
+  if (file) handleFile(file);
+}
+
+function previewUrl(url) {
+  if (!url || !/^https:\/\//.test(url)) return; // https uniquement
+  document.getElementById('imgPreview').src = url;
+  document.getElementById('previewBox').style.display='';
+  document.getElementById('dropContent').style.display='none';
+}
+
+async function saveAnnonce() {
+  const err = document.getElementById('formError');
+  err.style.display='none';
+  const nom   = document.getElementById('fNom').value.trim().replace(/[<>"']/g,'').slice(0,100);
+  const cat   = document.getElementById('fCat').value;
+  const zone  = document.getElementById('fZone').value;
+  const prix  = parseInt(document.getElementById('fPrix').value);
+  const promo = parseInt(document.getElementById('fPromo').value)||undefined;
+  const desc  = document.getElementById('fDesc').value.trim().replace(/[<>"']/g,'').slice(0,1000);
+  const image = document.getElementById('fImage').value.trim();
+  const lat   = parseFloat(document.getElementById('fLat').value)||null;
+  const lng   = parseFloat(document.getElementById('fLng').value)||null;
+
+  if (!nom)                           { err.textContent='Nom requis';        err.style.display='';return; }
+  if (!cat)                           { err.textContent='Catégorie requise'; err.style.display='';return; }
+  if (!zone)                          { err.textContent='Zone requise';      err.style.display='';return; }
+  if (!prix||isNaN(prix)||prix<0)     { err.textContent='Prix invalide';     err.style.display='';return; }
+  if (desc.length<20)                 { err.textContent='Description trop courte (min. 20 car.)'; err.style.display='';return; }
+  if (!image||!image.startsWith('http')){ err.textContent='URL image invalide'; err.style.display='';return; }
+
+  // Options
+  const options = [];
+  document.querySelectorAll('#optionRows > div').forEach(row=>{
+    const inputs = row.querySelectorAll('input');
+    const label = inputs[0]?.value.trim();
+    const p = parseInt(inputs[1]?.value);
+    if (label && p>=0) options.push({label, prix:p});
+  });
+
+  const payload = {
+    nom,categorie:cat,zone,
+    adresse:document.getElementById('fAdresse').value.trim()||null,
+    description:desc,prix,promo,
+    duree:document.getElementById('fDuree').value.trim()||null,
+    niveau:document.getElementById('fNiveau').value,
+    capacite:parseInt(document.getElementById('fCapacite').value)||null,
+    image_principale:image,options,lat,lng,
+    bons_plans:document.getElementById('fBonsPlans').checked,
+    publiee:document.getElementById('fPubliee').checked,
+  };
+
+  const btn = document.getElementById('btnSave');
+  btn.disabled=true; btn.textContent='Enregistrement…';
+  const editId = btn.getAttribute('data-edit-id');
+
+  try {
+    const { Admin } = window.DakarApp;
+    if (editId) {
+      await Admin.modifierActivite(parseInt(editId), payload);
+      showToast('Annonce modifiée', 'success');
+    } else {
+      await Admin.publierActivite(payload);
+      showToast('Annonce publiée', 'success');
+    }
+    showSection('annonces');
+  } catch(e) {
+    console.error('Erreur publication annonce :', e);
+    showToast(`Échec de la publication : ${e.message || 'vérifiez votre connexion et réessayez'}`, 'error');
+  }
+
+  btn.disabled=false;
+  btn.innerHTML='<i class="ti ti-check" style="font-size:14px"></i> Publier l\'annonce';
+  showSection('annonces', null);
+}
+
+// ─────────────────────────────
+//  AVIS
+// ─────────────────────────────
+async function renderAvis() {
+  let avis = [];
+  try {
+    const { Avis } = window.DakarApp;
+    avis = await Avis.getTousAdmin();
+  } catch(e) {
+    avis = [
+      {id:1,profiles:{prenom:'Aminata',nom:'Diallo'},activites:{nom:'Sortie kayak'},note:5,texte:'Excellent ! Je recommande vivement.',verifie:false,created_at:'2025-05-20'},
+      {id:2,profiles:{prenom:'Moussa',nom:'Kouyaté'},activites:{nom:'Quad Lac Rose'},note:4,texte:'Très bonne expérience globale.',verifie:true,created_at:'2025-05-18'},
+    ];
+  }
+
+  document.getElementById('tbAvis').innerHTML = avis.length ? avis.map(a=>`
+    <tr>
+      <td style="font-size:13px">${esc(a.profiles?.prenom||'')} ${esc(a.profiles?.nom||'')}</td>
+      <td style="font-size:13px">${esc(a.activites?.nom||'—')}</td>
+      <td style="color:var(--gold)">${'★'.repeat(a.note||0)}</td>
+      <td style="font-size:13px;color:var(--ink-2);max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(a.texte||'')}</td>
+      <td style="font-size:12px;color:var(--ink-3)">${a.created_at?new Date(a.created_at).toLocaleDateString('fr-FR'):''}</td>
+      <td>
+        ${!a.verifie?`
+          <button class="btn btn-sm" style="background:rgba(42,122,82,.1);color:var(--success);padding:5px 10px;font-size:12px"
+                  onclick="validerAvis(${a.id},this)">Valider</button>
+        `:`<span style="font-size:12px;color:var(--success)">Publié</span>`}
+      </td>
+    </tr>
+  `).join('') : `<tr><td colspan="6" style="text-align:center;color:var(--ink-3);padding:32px">Aucun avis</td></tr>`;
+}
+
+async function validerAvis(id, btn) {
+  try {
+    const { Avis } = window.DakarApp;
+    await Avis.valider(id);
+    btn.closest('td').innerHTML = `<span style="font-size:12px;color:var(--success)">Publié</span>`;
+    showToast('Avis validé', 'success');
+  } catch(e) {
+    showToast('Erreur', 'error');
+  }
+}
+
+// ─────────────────────────────
+//  REVENUS
+// ─────────────────────────────
+function renderRevenus() {
+  const conf  = _resas.filter(r=>r.statut==='confirmee');
+  const total = conf.reduce((s,r)=>s+r.montant_total,0);
+  const moyen = conf.length ? Math.round(total/conf.length) : 0;
+  const taux  = _resas.length ? Math.round(conf.length/_resas.length*100) : 0;
+
+  document.getElementById('revTotal').textContent = `${total.toLocaleString('fr-FR')} FCFA`;
+  document.getElementById('revMoyen').textContent = `${moyen.toLocaleString('fr-FR')} FCFA`;
+  document.getElementById('revTaux').textContent  = `${taux}%`;
+
+  const byAct = {};
+  _resas.forEach(r=>{
+    const nom = r.activites?.nom||r.activite_nom||'—';
+    if (!byAct[nom]) byAct[nom]={total:0,count:0,conf:0};
+    byAct[nom].total+=r.montant_total;
+    byAct[nom].count++;
+    if(r.statut==='confirmee') byAct[nom].conf++;
+  });
+
+  document.getElementById('tbRevenus').innerHTML = Object.entries(byAct).map(([nom,d])=>`
+    <tr>
+      <td style="font-weight:500;font-size:13px">${nom}</td>
+      <td>${d.count}</td>
+      <td>${d.conf}</td>
+      <td><strong style="color:var(--success)">${d.total.toLocaleString('fr-FR')} FCFA</strong></td>
+    </tr>
+  `).join('');
+}
+
+// ─────────────────────────────
+//  INIT
+// ─────────────────────────────
+async function init() {
+  let isAdmin = false;
+  try {
+    const { Auth } = window.DakarApp;
+    isAdmin = await Auth.isAdmin();
+    const user = await Auth.getUser();
+    if (user) document.getElementById('adminEmailLabel').textContent = user.email;
+  } catch(e) {
+    // Pas de backdoor localhost — si Supabase non configuré, accès refusé
+    isAdmin = false;
+    console.warn('Supabase non configuré — accès admin refusé');
+  }
+
+  document.getElementById('adminGuard').style.display = 'none';
+
+  if (!isAdmin) {
+    const d = document.getElementById('accessDenied');
+    d.style.display = 'flex';
+    return;
+  }
+
+  document.getElementById('dashboardMain').style.display = '';
+  document.getElementById('dateLabel').textContent = new Date().toLocaleDateString('fr-FR', {
+    weekday:'long',day:'numeric',month:'long',year:'numeric'
+  });
+
+  // Activer premier lien
+  document.querySelector('.dash-link').classList.add('active');
+  renderOverview();
+  // Démarrer les notifications temps réel
+  if (window.RealtimeNotif) window.RealtimeNotif.demarrer();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+
+// ════════════════════════════════════════
+//  GESTION CRÉNEAUX JOUR / NUIT
+// ════════════════════════════════════════
+const creneaux = {
+  jour: ['08:00','09:00','10:00','11:00','14:00','15:00','16:00','17:00'],
+  nuit: ['18:00','19:00','20:00','21:00','22:00','23:00'],
+};
+
+function renderCreneaux(type) {
+  const grid = document.getElementById(`creneaux${type.charAt(0).toUpperCase()+type.slice(1)}Grid`);
+  if (!grid) return;
+  const color = type === 'jour' ? 'var(--gold)' : 'var(--teal)';
+  grid.innerHTML = creneaux[type].map(h => `
+    <span onclick="removeCreneau('${type}','${h}')"
+          title="Cliquer pour supprimer"
+          style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;
+                 background:${type==='jour'?'var(--gold-lt)':'var(--teal-lt)'};
+                 border:1px solid ${color};border-radius:99px;
+                 font-size:12px;font-weight:500;color:${color};cursor:pointer;transition:.15s"
+          onmouseover="this.style.opacity='.6'" onmouseout="this.style.opacity='1'">
+      ${h} <i class="ti ti-x" style="font-size:10px"></i>
+    </span>
+  `).join('') || `<span style="font-size:12px;color:var(--ink-4)">Aucun créneau — ajoutez-en ci-dessous</span>`;
+}
+
+function addCreneau(type) {
+  const input = document.getElementById(`newCreneau${type.charAt(0).toUpperCase()+type.slice(1)}`);
+  const val   = input.value;
+  if (!val) { showToast('Entrez une heure', 'error'); return; }
+  if (creneaux[type].includes(val)) { showToast('Ce créneau existe déjà', 'info'); return; }
+  creneaux[type].push(val);
+  creneaux[type].sort();
+  input.value = '';
+  renderCreneaux(type);
+}
+
+function removeCreneau(type, h) {
+  creneaux[type] = creneaux[type].filter(c => c !== h);
+  renderCreneaux(type);
+}
+
+function toggleCreneaux(periode) {
+  const jourBlock = document.getElementById('creneauxJourBlock');
+  const nuitBlock = document.getElementById('creneauxNuitBlock');
+  jourBlock.style.display = periode === 'nuit' ? 'none' : '';
+  nuitBlock.style.display = periode === 'jour' ? 'none' : '';
+}
+
+// Init créneaux au chargement
+document.addEventListener('DOMContentLoaded', () => {
+  renderCreneaux('jour');
+  renderCreneaux('nuit');
+  toggleCreneaux('jour'); // défaut
+});
+</script>
+</body>
+</html>

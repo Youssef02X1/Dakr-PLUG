@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard.html
+Disallow: /espace-utilisateur.html
+Disallow: /reservation.html
+Sitemap: https://dakarplug.netlify.app/sitemap.xml

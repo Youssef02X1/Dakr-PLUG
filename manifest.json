@@ -1,0 +1,37 @@
+{
+  "name": "Dakar PLUG",
+  "short_name": "DakarPlug",
+  "description": "Réservez vos activités à Dakar — Kayak, Quad, Plage, Restaurant et bien plus.",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#FAFAF8",
+  "theme_color": "#0D0D0D",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=192&h=192&fit=crop&q=80",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=512&h=512&fit=crop&q=80",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ],
+  "categories": ["travel", "lifestyle"],
+  "lang": "fr",
+  "shortcuts": [
+    {
+      "name": "Rechercher une activité",
+      "url": "/index.html#activites",
+      "description": "Voir toutes les activités disponibles"
+    },
+    {
+      "name": "Mes réservations",
+      "url": "/espace-utilisateur.html#reservations",
+      "description": "Consulter mes réservations"
+    }
+  ]
+}

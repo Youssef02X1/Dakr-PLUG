@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Réservez vos activités à Dakar — Kayak, Quad, Plage, Restaurant et bien plus. Paiement Wave et Orange Money.">
+  <meta property="og:title" content="Dakar PLUG — Réservez vos expériences au Sénégal">
+  <meta property="og:description" content="Kayak, jet ski, quad, plages privées, restaurants. Paiement Wave et Orange Money.">
+  <meta property="og:image" content="https://dakarplug.netlify.app/images/hero.jpg">
+  <meta property="og:type" content="website">
+  <title>Dakar PLUG — Réservez vos expériences au Sénégal</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<!-- ═══ NAVBAR ═══ -->
+<nav class="navbar" id="navbar" role="navigation" aria-label="Navigation principale">
+  <div class="container navbar-inner">
+    <a href="index.html" class="nav-logo"><span>Dakar</span>PLUG</a>
+    <ul class="nav-links" role="list">
+      <li><a href="index.html" class="active">Accueil</a></li>
+      <li><a href="index.html#activites">Activités</a></li>
+      <li><a href="index.html#carte">Carte</a></li>
+      <li><a href="index.html#bons-plans">Offres</a></li>
+      <li><a href="index.html#restaurants">Restaurants</a></li>
+      <li><a href="index.html#location">Location</a></li>
+    </ul>
+    <div class="nav-actions">
+      <div id="navUserArea">
+        <a href="auth.html" class="btn btn-ghost btn-sm">Connexion</a>
+        <a href="auth.html?mode=signup" class="btn btn-primary btn-sm">S'inscrire</a>
+      </div>
+      <button class="hamburger" id="hamburger" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div class="mobile-nav" id="mobileNav" role="navigation" aria-label="Menu mobile">
+  <a href="index.html">Accueil</a>
+  <a href="index.html#activites">Activités</a>
+  <a href="index.html#carte">Carte</a>
+  <a href="index.html#bons-plans">Offres</a>
+  <a href="index.html#restaurants">Restaurants</a>
+  <a href="espace-utilisateur.html">Mon espace</a>
+  <div style="margin-top:16px">
+    <a href="auth.html" class="btn btn-primary" style="width:100%;justify-content:center">Connexion</a>
+  </div>
+</div>
+
+<!-- ═══ HERO ═══ -->
+<header class="hero" role="banner">
+  <div class="container">
+    <div class="hero-grid">
+      <div class="hero-content">
+        <div class="hero-eyebrow">Dakar &amp; ses environs</div>
+        <h1>Vivez l'essentiel<br><em>du Sénégal</em></h1>
+        <p class="hero-sub">
+          Kayak, quad, plages privées, restaurants gastronomiques.
+          Réservez en quelques secondes, payez avec Wave ou Orange Money.
+        </p>
+
+        <form class="search-bar" id="searchForm" role="search" aria-label="Rechercher une activité">
+          <i class="ti ti-search" style="font-size:16px;color:var(--ink-3);flex-shrink:0" aria-hidden="true"></i>
+          <label for="searchInput" class="sr-only">Rechercher une activité ou un lieu</label>
+          <input type="text" id="searchInput" placeholder="Rechercher une activité, un lieu…"
+                 autocomplete="off" maxlength="120">
+          <div class="search-divider"></div>
+          <label for="searchZone" class="sr-only">Filtrer par zone</label>
+          <select id="searchZone" class="search-select">
+            <option value="">Toute zone</option>
+            <option value="dakar">Dakar</option>
+            <option value="ngor">Ngor</option>
+            <option value="almadies">Almadies</option>
+            <option value="yoff">Yoff</option>
+            <option value="lac_rose">Lac Rose</option>
+            <option value="saly">Saly</option>
+          </select>
+          <button type="submit" class="btn btn-accent btn-sm">Rechercher</button>
+        </form>
+
+        <div class="hero-stats" role="list">
+          <div class="hero-stat" role="listitem">
+            <strong id="statAct">—</strong>
+            <span>Activités</span>
+          </div>
+          <div class="hero-stat" role="listitem">
+            <strong>4.8</strong>
+            <span>Note moyenne</span>
+          </div>
+          <div class="hero-stat" role="listitem">
+            <strong>2 400+</strong>
+            <span>Réservations</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-image-side">
+        <img src="images/hero.jpg"
+             alt="Plage de Dakar au coucher du soleil" loading="lazy">
+        <div class="hero-image-caption">
+          <div class="t-label">Plage des Almadies</div>
+          <div class="val">Dakar, Sénégal</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ BANNIÈRE ÉVÉNEMENT ═══ -->
+<section id="eventBanner" class="event-banner" style="display:none" aria-labelledby="eventTitle">
+  <div style="display:grid;grid-template-columns:1fr 340px;max-width:1200px;margin:0 auto">
+    <div style="padding:52px 56px 52px 40px;border-right:1px solid rgba(255,255,255,.07)">
+      <div style="font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:16px" id="eventLabel">
+        Événement · 27 SEPTEMBRE 2026
+      </div>
+      <h2 id="eventTitle" style="font-family:var(--font-display);font-size:clamp(1.6rem,3vw,2.4rem);font-weight:300;color:#fff;letter-spacing:-.02em;line-height:1.1;margin-bottom:14px">
+        Une expérience unique
+      </h2>
+      <p id="eventDesc" style="font-size:14px;color:rgba(255,255,255,.42);line-height:1.7;max-width:440px;margin-bottom:28px">
+        Kayak, jet ski, gastronomie et musique live. Une soirée qui réunit le meilleur de Dakar.
+      </p>
+      <div style="display:flex;align-items:center;gap:24px;margin-bottom:32px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:8px">
+          <i class="ti ti-map-pin" style="font-size:14px;color:var(--accent)" aria-hidden="true"></i>
+          <span id="eventLieu" style="font-size:13px;color:rgba(255,255,255,.5)">King Fahd Palace, Dakar</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <i class="ti ti-ticket" style="font-size:14px;color:var(--accent)" aria-hidden="true"></i>
+          <span id="eventPrix" style="font-size:13px;color:rgba(255,255,255,.5)">Dès 15 000 FCFA</span>
+        </div>
+        <div style="position:relative;overflow:hidden;min-height:280px">
+      <img id="eventImg"
+           src="images/banniere-evenement.jpg"
+           alt="Événement nocturne"
+           style="width:100%;height:100%;object-fit:cover;filter:brightness(.45) saturate(.7)" loading="lazy">
+      <div style="position:absolute;inset:0;background:linear-gradient(to right,var(--ink) 0%,transparent 40%)"></div>
+    </div>
+      </div>
+      <a id="eventCta" href="reservation.html" class="btn btn-accent">Réserver ma place</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CATÉGORIES ═══ -->
+<section class="categories-section" aria-labelledby="catTitle">
+  <div class="container">
+    <div class="section-header">
+      <span class="eyebrow">Explorer</span>
+      <h2 id="catTitle">Par catégorie</h2>
+    </div>
+    <div class="categories-grid" id="categoriesGrid" role="list"></div>
+  </div>
+</section>
+
+<!-- ═══ ACTIVITÉS ═══ -->
+<section class="activities-section" id="activites" aria-labelledby="actTitle">
+  <div class="container">
+    <div class="activities-header">
+      <div class="section-header" style="margin-bottom:0">
+        <span class="eyebrow">Disponibles</span>
+        <h2 id="actTitle">Activités populaires</h2>
+      </div>
+      <div class="filter-bar" role="group" aria-label="Filtres">
+        <select id="filterPrix" class="filter-select" aria-label="Filtrer par prix">
+          <option value="">Tous les prix</option>
+          <option value="10000">Moins de 10 000 FCFA</option>
+          <option value="25000">Moins de 25 000 FCFA</option>
+          <option value="50000">Moins de 50 000 FCFA</option>
+          <option value="100000">Moins de 100 000 FCFA</option>
+        </select>
+        <select id="filterZone" class="filter-select" aria-label="Filtrer par zone">
+          <option value="">Toutes zones</option>
+          <option value="Dakar">Dakar</option>
+          <option value="Ngor">Ngor</option>
+          <option value="Saly">Saly</option>
+          <option value="Lac Rose">Lac Rose</option>
+          <option value="Delta du Saloum">Delta du Sine-Saloum</option>
+        </select>
+        <select id="filterTri" class="filter-select" aria-label="Trier par">
+          <option value="recent">Plus récents</option>
+          <option value="prix_asc">Prix croissant</option>
+          <option value="prix_desc">Prix décroissant</option>
+          <option value="note">Mieux notés</option>
+        </select>
+      </div>
+    </div>
+    <div id="activitesGrid" class="activities-grid" role="list" aria-label="Liste des activités"></div>
+    <div style="text-align:center;margin-top:48px">
+      <button class="btn btn-outline btn-lg" id="loadMoreBtn" style="display:none">
+        Voir plus
+        <i class="ti ti-chevron-down" style="font-size:14px" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CARTE ═══ -->
+<section class="map-section" id="carte" aria-labelledby="mapTitle">
+  <div class="container">
+    <div class="section-header">
+      <span class="eyebrow">Géolocalisation</span>
+      <h2 id="mapTitle">Trouver sur la carte</h2>
+      <p>Explorez toutes les activités autour de Dakar et ses environs</p>
+    </div>
+    <div class="map-wrapper">
+      <div id="map" role="application" aria-label="Carte interactive des activités à Dakar"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ OFFRES ═══ -->
+<section class="activities-section" id="bons-plans" aria-labelledby="bpTitle">
+  <div class="container">
+    <div class="section-header">
+      <span class="eyebrow">Sélection</span>
+      <h2 id="bpTitle">Offres du moment</h2>
+      <p>Réductions et promotions exclusives cette semaine</p>
+    </div>
+    <div id="bonsPlansGrid" class="activities-grid" role="list"></div>
+  </div>
+</section>
+
+<!-- ═══ RESTAURANTS ═══ -->
+<section class="activities-section" id="restaurants" aria-labelledby="restoTitle">
+  <div class="container">
+    <div class="section-header">
+      <span class="eyebrow">Gastronomie</span>
+      <h2 id="restoTitle">Restaurants</h2>
+      <p>Les meilleures tables de Dakar et ses environs</p>
+    </div>
+    <div id="restosGrid" class="activities-grid" role="list"></div>
+  </div>
+</section>
+
+<!-- ═══ LOCATION ═══ -->
+<section class="activities-section" id="location" aria-labelledby="locTitle">
+  <div class="container">
+    <div class="section-header">
+      <span class="eyebrow">Mobilité &amp; Hébergement</span>
+      <h2 id="locTitle">Location de véhicules &amp; appartements</h2>
+    </div>
+    <div id="locationGrid" class="activities-grid" role="list"></div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+
+<!-- ═══ SECTION DELTA DU SALOUM ═══ -->
+<section class="saloum-section" style="background:linear-gradient(135deg,#0D1F1A 0%,#1B4D3E 100%);overflow:hidden;position:relative">
+  <!-- Motif décoratif -->
+  <div aria-hidden="true" style="position:absolute;top:-80px;right:-80px;width:400px;height:400px;
+       border-radius:50%;border:1px solid rgba(196,154,60,.08);pointer-events:none"></div>
+  <div aria-hidden="true" style="position:absolute;bottom:-60px;left:-60px;width:280px;height:280px;
+       border-radius:50%;border:1px solid rgba(196,154,60,.06);pointer-events:none"></div>
+
+  <div class="container" style="position:relative;z-index:1">
+    <div class="saloum-grid">
+
+      <!-- GAUCHE : IMAGE + BADGE -->
+      <div style="position:relative">
+        <img src="image/saloum-teaser.jpg"
+             alt="Delta du Saloum — île de Mar Lodj"
+             loading="lazy"
+             class="saloum-img">
+        <!-- Badge superposé -->
+        <div style="position:absolute;top:24px;left:24px;background:rgba(196,154,60,.95);
+                    border-radius:99px;padding:7px 16px;font-size:11px;font-weight:700;
+                    letter-spacing:.1em;text-transform:uppercase;color:#0D1F1A">
+          Nouveau · Excursions exclusives
+        </div>
+        <!-- Carte mini -->
+        <div style="position:absolute;bottom:24px;right:24px;background:rgba(13,31,26,.9);
+                    backdrop-filter:blur(12px);border:1px solid rgba(196,154,60,.2);
+                    border-radius:14px;padding:16px 20px;color:#fff">
+          <div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+                      color:rgba(196,154,60,.8);margin-bottom:4px">Localisation</div>
+          <div style="font-size:14px;font-weight:500">Île de Mar Lodj</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:2px">Delta du Sine-Saloum · 180 km de Dakar</div>
+        </div>
+      </div>
+
+      <!-- DROITE : TEXTE -->
+      <div>
+        <div style="display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:600;
+                    letter-spacing:.12em;text-transform:uppercase;color:rgba(196,154,60,.8);margin-bottom:20px">
+          <span style="display:block;width:28px;height:1px;background:rgba(196,154,60,.6)"></span>
+          Escapade nature
+        </div>
+        <h2 style="font-family:var(--font-display);font-size:clamp(2rem,3.5vw,3rem);font-weight:300;
+                   letter-spacing:-.03em;line-height:1.1;color:#fff;margin-bottom:20px">
+          Le Delta du Sine-Saloum<br><em style="color:#C49A3C;font-style:italic">vous appelle</em>
+        </h2>
+        <p style="font-size:15px;color:rgba(255,255,255,.55);line-height:1.8;margin-bottom:28px;max-width:440px">
+          Bolongs, mangroves et villages de pêcheurs. Des excursions
+          authentiques organisées avec les acteurs locaux de l'île de Mar Lodj,
+          au cœur d'une réserve UNESCO.
+        </p>
+
+        <!-- Les 4 packs -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px">
+          <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;
+                      background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+                      border-radius:10px">
+            <i class="ti ti-sailboat" style="font-size:18px;color:#C49A3C;flex-shrink:0" aria-hidden="true"></i>
+            <span style="font-size:13px;color:rgba(255,255,255,.75)">Balade en pirogue dans les bolongs</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;
+                      background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+                      border-radius:10px">
+            <i class="ti ti-fish" style="font-size:18px;color:#C49A3C;flex-shrink:0" aria-hidden="true"></i>
+            <span style="font-size:13px;color:rgba(255,255,255,.75)">Pêche traditionnelle</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;
+                      background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+                      border-radius:10px">
+            <i class="ti ti-sun" style="font-size:18px;color:#C49A3C;flex-shrink:0" aria-hidden="true"></i>
+            <span style="font-size:13px;color:rgba(255,255,255,.75)">Pique-nique bolongs</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;
+                      background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+                      border-radius:10px">
+            <i class="ti ti-compass" style="font-size:18px;color:#C49A3C;flex-shrink:0" aria-hidden="true"></i>
+            <span style="font-size:13px;color:rgba(255,255,255,.75)">Île & Culture</span>
+          </div>
+        </div>
+
+        <!-- Prix à partir de + CTA -->
+        <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+          <a href="saloum.html"
+             style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;
+                    background:#C49A3C;color:#0D1F1A;border-radius:99px;
+                    font-size:14px;font-weight:600;text-decoration:none;
+                    transition:all .2s"
+             onmouseover="this.style.background='#d4aa4c';this.style.transform='translateY(-2px)'"
+             onmouseout="this.style.background='#C49A3C';this.style.transform='none'">
+            <i class="ti ti-arrow-right" style="font-size:14px"></i>
+            Découvrir les excursions
+          </a>
+          <div style="color:rgba(255,255,255,.45);font-size:13px">
+            Dès <strong style="color:#C49A3C">5 000 FCFA</strong> / pers.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer role="contentinfo">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="nav-logo" style="margin-bottom:16px"><span>Dakar</span>PLUG</div>
+        <p>La plateforme de référence pour réserver vos expériences au Sénégal. Paiement Wave et Orange Money.</p>
+      </div>
+      <div>
+        <h4>Activités</h4>
+        <ul>
+          <li><a href="index.html?cat=kayak">Kayak &amp; Nautique</a></li>
+          <li><a href="index.html?cat=quad">Quad &amp; Aventure</a></li>
+          <li><a href="index.html?cat=plage">Plages privées</a></li>
+          <li><a href="index.html?cat=plein_air">Plein air</a></li>
+          <li><a href="index.html?cat=restaurant">Restaurants</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Mon compte</h4>
+        <ul>
+          <li><a href="espace-utilisateur.html">Mon espace</a></li>
+          <li><a href="espace-utilisateur.html#reservations">Mes réservations</a></li>
+          <li><a href="espace-utilisateur.html#favoris">Mes favoris</a></li>
+          <li><a href="espace-utilisateur.html#profil">Mon profil</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Informations</h4>
+        <ul>
+          <li><a href="cgv.html">Conditions générales</a></li>
+          <li><a href="cgv.html#confidentialite">Confidentialité</a></li>
+          <li><a href="cgv.html#remboursement">Remboursement</a></li>
+          <li><a href="cgv.html#contact">Contact</a></li>
+          <li><a href="dashboard.html">Administration</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Dakar PLUG. Tous droits réservés.</span>
+      <span>Dakar, Sénégal</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══ SCRIPTS ═══ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="seo.js"></script>
+<script src="supabase-config.js"></script>
+<script src="app.js"></script>
+<script>
+// ════════════════════════════════════════
+//  SÉCURITÉ — Anti-XSS
+// ════════════════════════════════════════
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#x27;');
+}
+function safeUrl(u) {
+  if (!u) return '';
+  if (/^https?:\/\//i.test(u)) return u;
+  return ''; // rejeter javascript:, data:, etc.
+}
+// ════════════════════════════════════════
+//  CATÉGORIES
+// ════════════════════════════════════════
+const CATS = [
+  {key:'kayak',      label:'Kayak',      icon:'ti-sailboat'},
+  {key:'jetski',     label:'Jet ski',     icon:'ti-speedboat'},
+  {key:'quad',       label:'Quad',        icon:'ti-motorbike'},
+  {key:'plage',      label:'Plage',       icon:'ti-sun'},
+  {key:'cinema',     label:'Cinéma',      icon:'ti-movie'},
+  {key:'sortie',     label:'Soirée',      icon:'ti-music'},
+  {key:'location',   label:'Location',    icon:'ti-building'},
+  {key:'plein_air',  label:'Plein air',   icon:'ti-trees'},
+  {key:'restaurant', label:'Restaurant',  icon:'ti-tools-kitchen-2'},
+  {key:'bons_plans', label:'Offres',      icon:'ti-tag'},
+];
+
+// ════════════════════════════════════════
+//  ÉTAT
+// ════════════════════════════════════════
+const S = {
+  cat:'', prix:'', zone:'', tri:'recent', q:'',
+  page:1, size:9,
+  all: [],
+};
+
+// ════════════════════════════════════════
+//  NAVBAR
+// ════════════════════════════════════════
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20);
+});
+const hbg = document.getElementById('hamburger');
+const mob = document.getElementById('mobileNav');
+hbg.addEventListener('click', () => {
+  const open = mob.classList.toggle('open');
+  hbg.setAttribute('aria-expanded', open);
+});
+document.addEventListener('click', e => {
+  if (!hbg.contains(e.target) && !mob.contains(e.target)) mob.classList.remove('open');
+});
+
+// ════════════════════════════════════════
+//  TOAST
+// ════════════════════════════════════════
+function toast(msg, type='info') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.textContent = msg;
+  t.setAttribute('role','alert');
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+// ════════════════════════════════════════
+//  AUTH NAVBAR
+// ════════════════════════════════════════
+async function checkAuth() {
+  try {
+    const user = await window.DakarApp.Auth.getUser();
+    if (!user) return;
+    const init = (user.user_metadata?.prenom || user.email || 'U')[0].toUpperCase();
+    document.getElementById('navUserArea').innerHTML =
+      `<a href="espace-utilisateur.html" aria-label="Mon espace">
+         <div class="nav-avatar">${init}</div>
+       </a>`;
+  } catch(e) { /* non configuré */ }
+}
+
+// ════════════════════════════════════════
+//  CATÉGORIES
+// ════════════════════════════════════════
+function renderCats() {
+  document.getElementById('categoriesGrid').innerHTML = CATS.map(c => `
+    <div class="cat-card ${S.cat===c.key?'active':''}"
+         role="listitem" tabindex="0" data-cat="${c.key}"
+         aria-label="${c.label}" aria-pressed="${S.cat===c.key}">
+      <div class="cat-icon"><i class="ti ${c.icon}" aria-hidden="true"></i></div>
+      <span class="cat-name">${c.label}</span>
+    </div>
+  `).join('');
+  document.querySelectorAll('.cat-card').forEach(el => {
+    const go = () => {
+      S.cat = S.cat === el.dataset.cat ? '' : el.dataset.cat;
+      S.page = 1;
+      renderCats();
+      renderGrid();
+    };
+    el.addEventListener('click', go);
+    el.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); } });
+  });
+}
+
+// ════════════════════════════════════════
+//  FILTRAGE LOCAL
+// ════════════════════════════════════════
+function filtered() {
+  let list = S.all.filter(a => a.publiee);
+  if (S.cat)  list = list.filter(a => a.categorie === S.cat);
+  if (S.prix) list = list.filter(a => a.prix <= parseInt(S.prix));
+  if (S.zone) list = list.filter(a => (a.zone||'').toLowerCase().includes(S.zone.toLowerCase()));
+  if (S.q)    list = list.filter(a =>
+    (a.nom||'').toLowerCase().includes(S.q) ||
+    (a.description||'').toLowerCase().includes(S.q) ||
+    (a.zone||'').toLowerCase().includes(S.q)
+  );
+  switch(S.tri) {
+    case 'prix_asc':  list.sort((a,b)=>a.prix-b.prix); break;
+    case 'prix_desc': list.sort((a,b)=>b.prix-a.prix); break;
+    case 'note':      list.sort((a,b)=>(b.note||0)-(a.note||0)); break;
+  }
+  return list;
+}
+
+// ════════════════════════════════════════
+//  CARTE D'ACTIVITÉ
+// ════════════════════════════════════════
+let favs;
+try {
+  favs = new Set(JSON.parse(localStorage.getItem('da_favoris')||'[]').map(Number));
+} catch(e) {
+  favs = new Set();
+  localStorage.removeItem('da_favoris'); // Données corrompues → nettoyer
+}
+
+function card(a) {
+  const p = a.promo ? Math.round(a.prix*(1-a.promo/100)) : a.prix;
+  const id    = parseInt(a.id,10);
+  const nom   = esc(a.nom);
+  const zone  = esc(a.zone);
+  const desc  = esc((a.description||'').slice(0,82));
+  const img   = safeUrl(a.image_principale);
+  return `
+  <article class="activity-card" role="listitem" tabindex="0"
+           onclick="location.href='activite.html?id=${id}'"
+           onkeydown="if(event.key==='Enter')location.href='activite.html?id=${id}'"
+           aria-label="${nom} — ${p.toLocaleString('fr-FR')} FCFA">
+    <div class="ac-image">
+      ${img?`<img src="${img}" alt="${nom}" loading="lazy">`:''}
+      ${a.promo?`<div class="ac-badge"><span class="badge badge-accent">-${a.promo}%</span></div>`:''}
+      <button class="ac-fav" onclick="event.stopPropagation();toggleFav(${id},this)"
+              aria-label="${favs.has(id)?'Retirer des':'Ajouter aux'} favoris"
+              style="${favs.has(id)?'color:var(--accent)':''}">
+        <i class="ti ti-heart${favs.has(id)?'-filled':''}" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="ac-body">
+      <div class="ac-meta">
+        <span class="ac-zone"><i class="ti ti-map-pin" style="font-size:11px" aria-hidden="true"></i> ${zone}</span>
+        ${a.note>0?`<span class="ac-rating"><i class="ti ti-star-filled" style="font-size:11px;color:var(--gold)" aria-hidden="true"></i> ${a.note} <span style="color:var(--ink-4)">(${a.nb_avis})</span></span>`:''}
+      </div>
+      <h3 class="ac-name">${nom}</h3>
+      <p class="ac-desc">${desc}…</p>
+      <div class="ac-footer">
+        <div class="ac-price">
+          ${a.promo?`<span style="font-size:12px;color:var(--ink-4);text-decoration:line-through;margin-right:4px">${a.prix.toLocaleString('fr-FR')}</span>`:''}
+          <strong>${p.toLocaleString('fr-FR')} FCFA</strong><span>/pers.</span>
+        </div>
+        <button class="btn btn-primary btn-sm"
+                onclick="event.stopPropagation();location.href='reservation.html?id=${id}'"
+                aria-label="Réserver ${nom}">Réserver</button>
+      </div>
+    </div>
+  </article>`;
+}
+
+// ════════════════════════════════════════
+//  RENDU DE LA GRILLE
+// ════════════════════════════════════════
+function renderGrid() {
+  const grid = document.getElementById('activitesGrid');
+  const list = filtered();
+  const page = list.slice(0, S.page * S.size);
+  if (!page.length) {
+    grid.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1">
+        <span class="empty-icon"><i class="ti ti-search-off" style="font-size:2rem"></i></span>
+        <h3>Aucune activité trouvée</h3>
+        <p>Essayez d'autres filtres ou une autre zone.</p>
+        <button class="btn btn-outline" style="margin-top:16px" onclick="resetFiltres()">
+          Réinitialiser les filtres
+        </button>
+      </div>`;
+  } else {
+    grid.innerHTML = page.map(card).join('');
+  }
+  grid.classList.remove('content-in');
+  void grid.offsetWidth;
+  grid.classList.add('content-in');
+  const btn = document.getElementById('loadMoreBtn');
+  btn.style.display = page.length < list.length ? '' : 'none';
+}
+
+function resetFiltres() {
+  S.cat=''; S.prix=''; S.zone=''; S.q=''; S.page=1;
+  document.getElementById('filterPrix').value = '';
+  document.getElementById('filterZone').value = '';
+  document.getElementById('filterTri').value  = 'recent';
+  document.getElementById('searchInput').value = '';
+  renderCats();
+  renderGrid();
+}
+
+// ════════════════════════════════════════
+//  FAVORIS
+// ════════════════════════════════════════
+async function toggleFav(id, btn) {
+  try {
+    const { Auth, Activites } = window.DakarApp;
+    const user = await Auth.getUser().catch(()=>null);
+    if (user) await Activites.toggleFavori(user.id, id);
+    if (favs.has(id)) {
+      favs.delete(id);
+      btn.querySelector('i').className = 'ti ti-heart';
+      btn.style.color = '';
+      toast('Retiré des favoris', 'info');
+    } else {
+      favs.add(id);
+      btn.querySelector('i').className = 'ti ti-heart-filled';
+      btn.style.color = 'var(--accent)';
+      toast('Ajouté aux favoris', 'success');
+    }
+    btn.classList.remove('pop');
+    void btn.offsetWidth;
+    btn.classList.add('pop');
+    localStorage.setItem('da_favoris', JSON.stringify([...favs]));
+  } catch(e) { toast('Erreur', 'error'); }
+}
+
+// ════════════════════════════════════════
+//  CARTE LEAFLET
+// ════════════════════════════════════════
+let mapInst = null;
+
+function initMap(list) {
+  if (!mapInst) {
+    mapInst = L.map('map', { center:[14.7167,-17.4677], zoom:11 });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution:'© OpenStreetMap contributors', maxZoom:18
+    }).addTo(mapInst);
+  }
+  const ico = L.divIcon({
+    className:'',
+    html:`<div style="width:10px;height:10px;background:#C85A3C;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 4px rgba(200,90,60,.2)"></div>`,
+    iconSize:[10,10], iconAnchor:[5,5], popupAnchor:[0,-10]
+  });
+  list.filter(a=>a.lat&&a.lng).forEach(a => {
+    const p = a.promo ? Math.round(a.prix*(1-a.promo/100)) : a.prix;
+    L.marker([a.lat,a.lng],{icon:ico}).addTo(mapInst).bindPopup(`
+      <div style="font-family:'Inter',sans-serif;min-width:180px">
+        <img src="${safeUrl(a.image_principale)}" style="width:100%;height:88px;object-fit:cover;border-radius:6px;margin-bottom:8px" alt="${esc(a.nom)}">
+        <div style="font-weight:500;font-size:13px;color:#0D0D0D">${esc(a.nom)}</div>
+        <div style="font-size:12px;color:#7A7A7A;margin:2px 0">${esc(a.zone)}</div>
+        <strong style="color:#C85A3C;font-size:13px">${p.toLocaleString('fr-FR')} FCFA</strong><br>
+        <a href="activite.html?id=${a.id}" style="display:inline-block;margin-top:8px;font-size:12px;color:#1A6560;font-weight:500">
+          Voir et réserver
+        </a>
+      </div>
+    `);
+  });
+}
+
+// ════════════════════════════════════════
+//  SECTIONS BONS PLANS / RESTAURANTS / LOCATION
+// ════════════════════════════════════════
+function renderSection(gridId, cat, bonsPlans=false) {
+  const list = bonsPlans
+    ? S.all.filter(a=>a.publiee&&a.bons_plans)
+    : S.all.filter(a=>a.publiee&&a.categorie===cat).slice(0,3);
+  const el = document.getElementById(gridId);
+  el.innerHTML = list.map(card).join('');
+  el.classList.add('content-in');
+}
+
+function renderBanner() {
+  const event = S.all.find(a=>a.publiee&&a.bons_plans);
+  if (!event) return;
+  document.getElementById('eventBanner').style.display = '';
+  document.getElementById('eventTitle').textContent = event.nom || '';
+  document.getElementById('eventDesc').textContent  = (event.description||'').slice(0,120); // textContent est safe
+  document.getElementById('eventLieu').textContent  = event.adresse || event.zone;
+  document.getElementById('eventPrix').textContent  = `Dès ${event.prix.toLocaleString('fr-FR')} FCFA`;
+  document.getElementById('eventCta').href          = `reservation.html?id=${event.id}`;
+  if (event.image_principale) document.getElementById('eventImg').src = event.image_principale;
+  if (event.promo) document.getElementById('eventLabel').textContent = `Offre spéciale · -${event.promo}%`;
+}
+
+// ════════════════════════════════════════
+//  CHARGEMENT SUPABASE
+// ════════════════════════════════════════
+async function loadAll() {
+  try {
+    const { Activites } = window.DakarApp;
+    S.all = await Activites.getAll();
+  } catch(e) {
+    console.error('Erreur chargement activités :', e);
+    S.all = [];
+    toast('Impossible de charger les activités. Réessayez dans un instant.', 'error');
+  }
+  document.getElementById('statAct').textContent = S.all.length + '+';
+  renderGrid();
+  renderSection('bonsPlansGrid', null, true);
+  renderSection('restosGrid', 'restaurant');
+  renderSection('locationGrid', 'location');
+  renderBanner();
+  initMap(S.all);
+}
+
+// ════════════════════════════════════════
+//  FILTRES & EVENTS
+// ════════════════════════════════════════
+document.getElementById('filterPrix').addEventListener('change', e => { S.prix=e.target.value; S.page=1; renderGrid(); });
+document.getElementById('filterZone').addEventListener('change', e => { S.zone=e.target.value; S.page=1; renderGrid(); });
+document.getElementById('filterTri').addEventListener('change',  e => { S.tri=e.target.value;            renderGrid(); });
+document.getElementById('loadMoreBtn').addEventListener('click', () => { S.page++; renderGrid(); });
+
+document.getElementById('searchForm').addEventListener('submit', e => {
+  e.preventDefault();
+  S.q    = document.getElementById('searchInput').value.trim().toLowerCase().replace(/[<>"']/g,'');
+  S.zone = document.getElementById('searchZone').value;
+  S.page = 1;
+  renderGrid();
+  document.getElementById('activites').scrollIntoView({ behavior:'smooth' });
+});
+
+// Params URL (?cat=xxx&q=xxx)
+function applyUrlParams() {
+  const p = new URLSearchParams(window.location.search);
+  if (p.get('cat'))  S.cat  = p.get('cat');
+  if (p.get('zone')) S.zone = p.get('zone');
+  if (p.get('q'))    { S.q = p.get('q').toLowerCase(); document.getElementById('searchInput').value = p.get('q'); }
+  if (S.cat||S.zone||S.q) {
+    setTimeout(() => document.getElementById('activites').scrollIntoView({behavior:'smooth'}), 600);
+  }
+}
+
+// ════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  applyUrlParams();
+  renderCats();
+  checkAuth();
+  loadAll();
+  // SEO homepage
+  if (window.SEO) {
+    const SITE_URL = window.DakarApp?.SITE_URL || window.location.origin;
+    SEO.injectHomepage(SITE_URL);
+  }
+});
+</script>
+</body>
+</html>

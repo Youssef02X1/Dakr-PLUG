@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion — Dakar PLUG</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<div class="auth-page">
+
+  <!-- IMAGE GAUCHE -->
+  <div class="auth-left">
+    <img src="images/hero.jpg" alt="Plage de Dakar" loading="lazy">
+    <div class="auth-left-text">
+      <h2>Vivez l'essentiel<br><em>du Sénégal</em></h2>
+      <p>Kayak, quad, plages privées, gastronomie. Tout Dakar en un seul endroit.</p>
+    </div>
+  </div>
+
+  <!-- FORMULAIRE DROITE -->
+  <div class="auth-right">
+    <div class="auth-card">
+
+      <div class="auth-logo" style="margin-bottom:32px">
+        <a href="index.html" class="nav-logo" style="margin-bottom:6px">
+          <span>Dakar</span>PLUG
+        </a>
+        <p style="font-size:13px;color:var(--ink-3);margin-top:6px">Bienvenue sur la plateforme n°1 au Sénégal</p>
+      </div>
+
+      <!-- TABS -->
+      <div class="auth-tabs" role="tablist" style="margin-bottom:28px">
+        <button class="auth-tab active" id="tabConnexion" role="tab" aria-selected="true"
+                onclick="switchTab('connexion')">Connexion</button>
+        <button class="auth-tab" id="tabInscription" role="tab" aria-selected="false"
+                onclick="switchTab('inscription')">S'inscrire</button>
+      </div>
+
+      <!-- PANEL CONNEXION -->
+      <div id="panelConnexion">
+        <div class="auth-form">
+          <div class="field">
+            <label for="loginEmail">Email</label>
+            <input type="email" id="loginEmail" placeholder="votre@email.com"
+                   maxlength="100" autocomplete="email" aria-required="true">
+          </div>
+          <div class="field">
+            <label for="loginPassword" style="display:flex;justify-content:space-between;align-items:center">
+              Mot de passe
+              <a href="#" onclick="showForgot();return false"
+                 style="font-size:12px;color:var(--teal);font-weight:400">Mot de passe oublié ?</a>
+            </label>
+            <div style="position:relative">
+              <input type="password" id="loginPassword" placeholder="••••••••"
+                     maxlength="100" autocomplete="current-password" aria-required="true">
+              <button type="button" onclick="togglePwd('loginPassword',this)"
+                      style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:12px;color:var(--ink-3)"
+                      aria-label="Afficher le mot de passe">Voir</button>
+            </div>
+          </div>
+
+          <div id="loginError" style="display:none;padding:10px 14px;background:rgba(160,40,40,.07);border-radius:var(--r-xs);font-size:13px;color:var(--error)" role="alert"></div>
+
+          <button class="btn btn-primary" style="width:100%;margin-top:4px" onclick="doLogin()" type="button">
+            Se connecter
+          </button>
+
+          <div class="auth-divider" style="margin:20px 0">ou</div>
+
+          <button class="btn btn-outline" style="width:100%" onclick="loginGoogle()" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Continuer avec Google
+          </button>
+        </div>
+      </div>
+
+      <!-- PANEL INSCRIPTION -->
+      <div id="panelInscription" style="display:none">
+        <div class="auth-form">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="field">
+              <label for="regPrenom">Prénom</label>
+              <input type="text" id="regPrenom" placeholder="Aminata" maxlength="50"
+                     autocomplete="given-name" aria-required="true">
+            </div>
+            <div class="field">
+              <label for="regNom">Nom</label>
+              <input type="text" id="regNom" placeholder="Diallo" maxlength="50"
+                     autocomplete="family-name" aria-required="true">
+            </div>
+          </div>
+          <div class="field">
+            <label for="regEmail">Email</label>
+            <input type="email" id="regEmail" placeholder="votre@email.com" maxlength="100"
+                   autocomplete="email" aria-required="true">
+          </div>
+          <div class="field">
+            <label for="regTel">Téléphone</label>
+            <div style="display:flex;gap:8px;align-items:stretch">
+              <!-- Sélecteur indicatif pays -->
+              <div style="position:relative">
+                <select id="regCountryCode"
+                        style="height:100%;padding:0 8px;border:1.5px solid var(--line-2);
+                               border-radius:var(--r-sm);background:var(--paper-2);
+                               font-size:13px;font-weight:600;color:var(--ink-2);
+                               cursor:pointer;min-width:90px"
+                        onchange="updateRegHint()"
+                        aria-label="Indicatif pays">
+                  <option value="+221">🇸🇳 +221</option>
+                  <option value="+223">🇲🇱 +223</option>
+                  <option value="+225">🇨🇮 +225</option>
+                  <option value="+226">🇧🇫 +226</option>
+                  <option value="+224">🇬🇳 +224</option>
+                  <option value="+222">🇲🇷 +222</option>
+                  <option value="+220">🇬🇲 +220</option>
+                  <option value="+212">🇲🇦 +212</option>
+                  <option value="+213">🇩🇿 +213</option>
+                  <option value="+216">🇹🇳 +216</option>
+                  <option value="+33" >🇫🇷 +33</option>
+                  <option value="+32" >🇧🇪 +32</option>
+                  <option value="+41" >🇨🇭 +41</option>
+                  <option value="+44" >🇬🇧 +44</option>
+                  <option value="+49" >🇩🇪 +49</option>
+                  <option value="+39" >🇮🇹 +39</option>
+                  <option value="+34" >🇪🇸 +34</option>
+                  <option value="+351">🇵🇹 +351</option>
+                  <option value="+1"  >🇺🇸 +1</option>
+                  <option value="+55" >🇧🇷 +55</option>
+                  <option value="+966">🇸🇦 +966</option>
+                  <option value="+971">🇦🇪 +971</option>
+                </select>
+              </div>
+              <input type="tel" id="regTel"
+                     placeholder="77 123 45 67"
+                     maxlength="15"
+                     autocomplete="tel-national"
+                     style="flex:1"
+                     aria-label="Numéro de téléphone">
+            </div>
+            <span class="field-hint" id="regTelHint">Sans l'indicatif pays (+221)</span>
+          </div>
+          <div class="field">
+            <label for="regPassword">Mot de passe</label>
+            <div style="position:relative">
+              <input type="password" id="regPassword" placeholder="Minimum 8 caractères"
+                     maxlength="100" autocomplete="new-password" oninput="evalPwd(this.value)"
+                     aria-required="true">
+              <button type="button" onclick="togglePwd('regPassword',this)"
+                      style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:12px;color:var(--ink-3)"
+                      aria-label="Afficher le mot de passe">Voir</button>
+            </div>
+            <div id="pwdStrength" style="margin-top:5px;display:none">
+              <div style="height:3px;background:var(--paper-3);border-radius:2px;overflow:hidden">
+                <div id="pwdBar" style="height:100%;width:0;border-radius:2px;transition:.3s"></div>
+              </div>
+              <span id="pwdLabel" style="font-size:11px;margin-top:2px;display:block"></span>
+            </div>
+          </div>
+          <div class="field">
+            <label for="regPasswordConfirm">Confirmer le mot de passe</label>
+            <input type="password" id="regPasswordConfirm" placeholder="••••••••"
+                   maxlength="100" autocomplete="new-password" aria-required="true">
+          </div>
+          <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-size:13px">
+            <input type="checkbox" id="regCGU" style="margin-top:2px;flex-shrink:0" aria-required="true">
+            <span style="color:var(--ink-2)">
+              J'accepte les <a href="cgv.html" target="_blank" rel="noopener noreferrer" style="color:var(--teal)">conditions d'utilisation</a>
+            </span>
+          </label>
+
+          <div id="regError" style="display:none;padding:10px 14px;background:rgba(160,40,40,.07);border-radius:var(--r-xs);font-size:13px;color:var(--error)" role="alert"></div>
+
+          <button class="btn btn-primary" style="width:100%" onclick="doRegister()" type="button">
+            Créer mon compte
+          </button>
+        </div>
+      </div>
+
+      <!-- PANEL MOT DE PASSE OUBLIÉ -->
+      <div id="panelForgot" style="display:none">
+        <h3 style="font-family:var(--font-display);font-size:1.2rem;font-weight:300;margin-bottom:8px">
+          Réinitialisation
+        </h3>
+        <p style="font-size:13px;color:var(--ink-3);margin-bottom:20px;line-height:1.6">
+          Entrez votre email pour recevoir un lien de réinitialisation.
+        </p>
+        <div class="field" style="margin-bottom:16px">
+          <label for="forgotEmail">Email</label>
+          <input type="email" id="forgotEmail" placeholder="votre@email.com" maxlength="100" autocomplete="email">
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-outline" onclick="showConnexion()" type="button">Annuler</button>
+          <button class="btn btn-primary" style="flex:1" onclick="doForgot()" type="button">Envoyer</button>
+        </div>
+      </div>
+
+      <!-- PANEL CONFIRMATION EMAIL -->
+      <div id="panelConfirmation" style="display:none;text-align:center;padding:20px 0">
+        <div style="width:48px;height:48px;border-radius:50%;background:rgba(42,122,82,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+          <i class="ti ti-mail-check" style="font-size:22px;color:var(--success)"></i>
+        </div>
+        <h3 style="font-family:var(--font-display);font-size:1.2rem;font-weight:300;margin-bottom:8px">Vérifiez votre email</h3>
+        <p style="font-size:13px;color:var(--ink-3);line-height:1.7;margin-bottom:20px">
+          Un lien de confirmation a été envoyé à<br>
+          <strong id="confirmEmail" style="color:var(--ink)"></strong>
+        </p>
+        <a href="index.html" class="btn btn-outline" style="display:inline-flex">Retour à l'accueil</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+function showToast(msg, type='info') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.textContent = msg;
+  t.setAttribute('role','alert');
+  c.appendChild(t);
+  setTimeout(()=>t.remove(), 4000);
+}
+function showErr(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg; el.style.display = '';
+}
+function clearErr(id) { document.getElementById(id).style.display = 'none'; }
+
+// ── TABS ──
+function switchTab(tab) {
+  const isConn = tab === 'connexion';
+  document.getElementById('panelConnexion').style.display   = isConn ? '' : 'none';
+  document.getElementById('panelInscription').style.display = isConn ? 'none' : '';
+  document.getElementById('panelForgot').style.display      = 'none';
+  document.getElementById('tabConnexion').classList.toggle('active', isConn);
+  document.getElementById('tabInscription').classList.toggle('active', !isConn);
+  document.getElementById('tabConnexion').setAttribute('aria-selected', isConn);
+  document.getElementById('tabInscription').setAttribute('aria-selected', !isConn);
+}
+function showForgot() {
+  document.getElementById('panelConnexion').style.display = 'none';
+  document.getElementById('panelForgot').style.display    = '';
+}
+function showConnexion() {
+  document.getElementById('panelConnexion').style.display = '';
+  document.getElementById('panelForgot').style.display    = 'none';
+}
+
+// ── TOGGLE PASSWORD ──
+function togglePwd(id, btn) {
+  const inp = document.getElementById(id);
+  const hide = inp.type === 'password';
+  inp.type = hide ? 'text' : 'password';
+  btn.textContent = hide ? 'Cacher' : 'Voir';
+}
+
+// ── FORCE MOT DE PASSE ──
+function evalPwd(pwd) {
+  const el  = document.getElementById('pwdStrength');
+  const bar = document.getElementById('pwdBar');
+  const lbl = document.getElementById('pwdLabel');
+  if (!pwd) { el.style.display='none'; return; }
+  el.style.display = '';
+  let s = 0;
+  if (pwd.length >= 8)  s++;
+  if (pwd.length >= 12) s++;
+  if (/[A-Z]/.test(pwd)) s++;
+  if (/[0-9]/.test(pwd)) s++;
+  if (/[^A-Za-z0-9]/.test(pwd)) s++;
+  const levels = [
+    {w:'20%', c:'var(--error)',   t:'Très faible'},
+    {w:'40%', c:'var(--warning)', t:'Faible'},
+    {w:'60%', c:'var(--gold)',    t:'Moyen'},
+    {w:'80%', c:'var(--teal)',    t:'Bon'},
+    {w:'100%',c:'var(--success)', t:'Excellent'},
+  ];
+  const lvl = levels[Math.min(s-1, 4)] || levels[0];
+  bar.style.width = lvl.w; bar.style.background = lvl.c;
+  lbl.textContent = lvl.t; lbl.style.color = lvl.c;
+}
+
+// ── CONNEXION ──
+// SÉCURITÉ : rate limiting connexion (max 5 tentatives / 15 min)
+const _loginAttempts = { count: 0, resetAt: 0 };
+async function doLogin() {
+  clearErr('loginError');
+  // Vérifier rate limit
+  const now = Date.now();
+  if (now > _loginAttempts.resetAt) { _loginAttempts.count = 0; _loginAttempts.resetAt = now + 15*60*1000; }
+  if (_loginAttempts.count >= 5) {
+    const mins = Math.ceil((_loginAttempts.resetAt - now) / 60000);
+    showErr('loginError', `Trop de tentatives. Réessayez dans ${mins} minute(s).`);
+    return;
+  }
+  const email    = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showErr('loginError','Email invalide'); return; }
+  if (!password) { showErr('loginError','Mot de passe requis'); return; }
+
+  const btn = document.querySelector('#panelConnexion .btn-primary');
+  btn.disabled = true; btn.textContent = 'Connexion…';
+  try {
+    const { Auth } = window.DakarApp;
+    await Auth.signIn(email, password);
+    showToast('Connexion réussie', 'success');
+    // SÉCURITÉ : valider que redirect pointe vers une page interne uniquement
+    const rawRedirect = new URLSearchParams(window.location.search).get('redirect') || '';
+    const PAGES_AUTORISEES = ['espace-utilisateur.html','index.html','activite.html','reservation.html'];
+    const redirect = PAGES_AUTORISEES.some(p => rawRedirect.startsWith(p))
+      ? rawRedirect
+      : 'espace-utilisateur.html';
+    setTimeout(() => window.location.href = redirect, 500);
+  } catch(e) {
+    _loginAttempts.count++;
+    const msg = (e.message||'').includes('Invalid') ? 'Email ou mot de passe incorrect' : 'Erreur de connexion';
+    showErr('loginError', msg + (5 - _loginAttempts.count > 0 ? ` (${5-_loginAttempts.count} essai(s) restant)` : ''));
+    btn.disabled = false; btn.textContent = 'Se connecter';
+  }
+}
+
+// ── GOOGLE ──
+async function loginGoogle() {
+  try {
+    const { Auth } = window.DakarApp;
+    await Auth.signInWithGoogle();
+  } catch(e) {
+    showToast('Connexion Google non disponible', 'info');
+  }
+}
+
+// ── INSCRIPTION ──
+async function doRegister() {
+  clearErr('regError');
+  const prenom  = document.getElementById('regPrenom').value.trim().replace(/[<>"']/g,'').slice(0,50);
+  const nom     = document.getElementById('regNom').value.trim().replace(/[<>"']/g,'').slice(0,50);
+  const email   = document.getElementById('regEmail').value.trim();
+  const countryCode = document.getElementById('regCountryCode')?.value || '+221';
+  const telRaw  = document.getElementById('regTel').value.trim().replace(/[^0-9]/g,'');
+  const tel     = telRaw ? (countryCode + telRaw) : '';
+  const pwd     = document.getElementById('regPassword').value;
+  const confirm = document.getElementById('regPasswordConfirm').value;
+  const cgu     = document.getElementById('regCGU').checked;
+
+  if (!prenom || !nom)                                     { showErr('regError','Prénom et nom requis'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))          { showErr('regError','Email invalide'); return; }
+  // Validation téléphone internationale
+  if (tel) {
+    const cleanTel = tel.replace(/[^0-9]/g,'');
+    if (cleanTel.length < 6 || cleanTel.length > 15) { showErr('regError','Numéro de téléphone invalide'); return; }
+  }
+  if (pwd.length < 8)                                      { showErr('regError','Mot de passe trop court (min. 8 caractères)'); return; }
+  if (pwd !== confirm)                                     { showErr('regError','Les mots de passe ne correspondent pas'); return; }
+  if (!cgu)                                                { showErr('regError','Acceptez les conditions'); return; }
+
+  const btn = document.querySelector('#panelInscription .btn-primary');
+  btn.disabled = true; btn.textContent = 'Création…';
+  try {
+    const { Auth } = window.DakarApp;
+    await Auth.signUp(email, pwd, nom, prenom);
+    // Cacher tabs, montrer confirmation
+    document.querySelector('.auth-tabs').style.display = 'none';
+    document.getElementById('panelInscription').style.display = 'none';
+    document.getElementById('panelConfirmation').style.display = '';
+    document.getElementById('confirmEmail').textContent = email;
+  } catch(e) {
+    const msg = (e.message||'').includes('already') ? 'Un compte existe déjà avec cet email' : 'Erreur lors de la création du compte';
+    showErr('regError', msg);
+    btn.disabled = false; btn.textContent = 'Créer mon compte';
+  }
+}
+
+// ── MOT DE PASSE OUBLIÉ ──
+async function doForgot() {
+  const email = document.getElementById('forgotEmail').value.trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Email invalide','error'); return; }
+  try {
+    const { Auth } = window.DakarApp;
+    await Auth.resetPassword(email);
+    showToast('Email envoyé — vérifiez votre boîte mail', 'success');
+    showConnexion();
+  } catch(e) {
+    showToast('Erreur — vérifiez l\'adresse email', 'error');
+  }
+}
+
+// ── CLAVIER ──
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (document.getElementById('panelConnexion').style.display !== 'none') doLogin();
+  else if (document.getElementById('panelInscription').style.display !== 'none') doRegister();
+  else if (document.getElementById('panelForgot').style.display !== 'none') doForgot();
+});
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', async () => {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('mode') === 'signup') switchTab('inscription');
+
+  // Si déjà connecté → rediriger
+  try {
+    const { Auth } = window.DakarApp;
+    const user = await Auth.getUser();
+    if (user) window.location.href = 'espace-utilisateur.html';
+  } catch(e) { /* non connecté */ }
+});
+
+function updateRegHint() {
+  const code = document.getElementById('regCountryCode')?.value || '+221';
+  const hint = document.getElementById('regTelHint');
+  if (hint) hint.textContent = `Sans l'indicatif pays (${code})`;
+}
+</script>
+</body>
+</html>

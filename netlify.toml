@@ -1,0 +1,106 @@
+# ============================================
+# NETLIFY.TOML — Configuration sécurité
+# Dakar PLUG
+# ============================================
+
+[build]
+  publish = "."
+
+# Page 404 personnalisée
+[[redirects]]
+  from   = "/*"
+  to     = "/404.html"
+  status = 404
+
+# ════════════════════════════════════════════
+# HEADERS DE SÉCURITÉ HTTP
+# Appliqués à toutes les pages
+# ════════════════════════════════════════════
+[[headers]]
+  for = "/*"
+  [headers.values]
+
+    # Empêche le site d'être intégré dans une iframe (anti-clickjacking)
+    X-Frame-Options = "DENY"
+
+    # Empêche le navigateur de deviner le type de contenu (anti-sniffing)
+    X-Content-Type-Options = "nosniff"
+
+    # Active la protection XSS intégrée des navigateurs anciens
+    X-XSS-Protection = "1; mode=block"
+
+    # Contrôle les informations envoyées lors des redirections
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+    # Empêche l'accès aux capteurs et fonctionnalités sensibles non nécessaires
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(self), payment=()"
+
+    # HTTPS obligatoire pendant 1 an (HSTS)
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+
+    # Content-Security-Policy durcie
+    # unsafe-inline conservé pour scripts/styles inline (nécessaire sans bundler)
+    # Pour aller plus loin : migrez vers des nonces ou hash si vous utilisez un bundler
+    Content-Security-Policy = """
+      default-src 'none';
+      script-src 'self' 'unsafe-inline'
+        https://cdn.jsdelivr.net
+        https://cdnjs.cloudflare.com;
+      style-src 'self' 'unsafe-inline'
+        https://fonts.googleapis.com
+        https://cdn.jsdelivr.net;
+      font-src 'self'
+        https://fonts.gstatic.com
+        https://cdn.jsdelivr.net;
+      img-src 'self' data: blob:
+        https://images.unsplash.com
+        https://*.supabase.co
+        https://*.supabase.in
+        https://upload.wikimedia.org
+        https://*.tile.openstreetmap.org;
+      connect-src 'self'
+        https://cdn.jsdelivr.net
+        https://*.supabase.co
+        https://*.supabase.in
+        https://api.resend.com
+        https://api.wave.com
+        https://api.orange.com
+        https://*.tile.openstreetmap.org;
+      worker-src 'self';
+      manifest-src 'self';
+      frame-src 'none';
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self' https://wave.com https://api.orange.com;
+      upgrade-insecure-requests;
+    """
+
+# Headers spécifiques pour le dashboard (accès restreint)
+[[headers]]
+  for = "/dashboard.html"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate"
+    Pragma        = "no-cache"
+
+# Headers pour l'espace utilisateur (pas de cache)
+[[headers]]
+  for = "/espace-utilisateur.html"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate"
+
+# Headers pour la réservation (pas de cache)
+[[headers]]
+  for = "/reservation.html"
+  [headers.values]
+    Cache-Control = "no-store"
+
+# Cache long pour les assets statiques (CSS, JS, fonts)
+[[headers]]
+  for = "/styles.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"

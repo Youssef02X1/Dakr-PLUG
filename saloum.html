@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Excursions dans le Delta du Saloum — Balade en pirogue, pêche traditionnelle, pique-nique dans les bolongs. Réservez depuis Dakar PLUG.">
+  <meta property="og:title" content="Delta du Saloum — Escapades & Excursions">
+  <meta property="og:description" content="Pirogues, mangroves, bolongs et villages de pêcheurs. Une immersion dans l'une des plus belles réserves d'Afrique de l'Ouest.">
+  <meta property="og:image" content="https://dakarplug.netlify.app/images/saloum-hero.jpg">
+  <meta property="og:type" content="website">
+  <title>Delta du Saloum — Dakar PLUG</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    /* ══ PALETTE SALOUM ══ */
+    :root {
+      --saloum-vert:   #1B4D3E;
+      --saloum-or:     #C49A3C;
+      --saloum-eau:    #2E7D6E;
+      --saloum-sable:  #E8D5A3;
+      --saloum-sable-lt: #F7F0DC;
+      --saloum-nuit:   #0D1F1A;
+    }
+
+    /* HERO SALOUM */
+    .saloum-hero {
+      min-height: 100vh;
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      overflow: hidden;
+    }
+    .saloum-hero-bg {
+      position: absolute;
+      inset: 0;
+      background-image: url('images/saloum-hero.jpg');
+      background-size: cover;
+      background-position: center 40%;
+      filter: brightness(.55) saturate(.85);
+    }
+    .saloum-hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to top,
+        rgba(13,31,26,.95) 0%,
+        rgba(13,31,26,.5) 45%,
+        rgba(13,31,26,.1) 100%
+      );
+    }
+    .saloum-hero-content {
+      position: relative;
+      z-index: 2;
+      padding: 0 0 80px;
+      width: 100%;
+    }
+    .saloum-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--saloum-or);
+      margin-bottom: 18px;
+    }
+    .saloum-eyebrow::before {
+      content: '';
+      display: block;
+      width: 28px;
+      height: 1px;
+      background: var(--saloum-or);
+    }
+    .saloum-hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.4rem, 6vw, 5rem);
+      font-weight: 300;
+      letter-spacing: -.03em;
+      line-height: 1.05;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+    .saloum-hero h1 em {
+      color: var(--saloum-or);
+      font-style: italic;
+    }
+    .saloum-hero-sub {
+      font-size: 16px;
+      color: rgba(255,255,255,.6);
+      line-height: 1.7;
+      max-width: 520px;
+      margin-bottom: 36px;
+    }
+    .saloum-hero-stats {
+      display: flex;
+      gap: 40px;
+      flex-wrap: wrap;
+    }
+    .saloum-stat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .saloum-stat strong {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--saloum-or);
+      font-family: var(--font-display);
+    }
+    .saloum-stat span {
+      font-size: 12px;
+      color: rgba(255,255,255,.45);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    /* SCROLL INDICATOR */
+    .scroll-hint {
+      position: absolute;
+      bottom: 32px;
+      right: 40px;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      color: rgba(255,255,255,.4);
+      font-size: 11px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+    .scroll-line {
+      width: 1px;
+      height: 48px;
+      background: linear-gradient(to bottom, rgba(255,255,255,.4), transparent);
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+    @keyframes scrollPulse { 0%,100%{opacity:.4;transform:scaleY(1)} 50%{opacity:1;transform:scaleY(1.15)} }
+
+    /* INTRO */
+    .saloum-intro {
+      background: var(--saloum-nuit);
+      padding: 90px 0;
+      color: #fff;
+    }
+    .saloum-intro-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .saloum-intro-text h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 3vw, 2.6rem);
+      font-weight: 300;
+      letter-spacing: -.025em;
+      line-height: 1.15;
+      margin-bottom: 20px;
+      color: #fff;
+    }
+    .saloum-intro-text h2 span { color: var(--saloum-or); }
+    .saloum-intro-text p {
+      font-size: 15px;
+      color: rgba(255,255,255,.55);
+      line-height: 1.8;
+      margin-bottom: 16px;
+    }
+    .saloum-features {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 32px;
+    }
+    .saloum-feature {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .saloum-feature-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: rgba(196,154,60,.15);
+      border: 1px solid rgba(196,154,60,.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--saloum-or);
+      font-size: 16px;
+    }
+    .saloum-feature-text strong {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 2px;
+    }
+    .saloum-feature-text span {
+      font-size: 12px;
+      color: rgba(255,255,255,.4);
+      line-height: 1.5;
+    }
+    .saloum-intro-image {
+      position: relative;
+    }
+    .saloum-intro-image img {
+      width: 100%;
+      height: 480px;
+      object-fit: cover;
+      border-radius: 16px;
+    }
+    .saloum-intro-image-badge {
+      position: absolute;
+      bottom: 24px;
+      left: 24px;
+      background: rgba(13,31,26,.9);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(196,154,60,.25);
+      border-radius: 12px;
+      padding: 14px 18px;
+      color: #fff;
+    }
+    .saloum-intro-image-badge strong {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--saloum-or);
+    }
+    .saloum-intro-image-badge span {
+      font-size: 11px;
+      color: rgba(255,255,255,.45);
+    }
+
+    /* PACKAGES */
+    .saloum-packages {
+      background: var(--saloum-sable-lt);
+      padding: 100px 0;
+    }
+    .saloum-section-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+    .saloum-section-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--saloum-eau);
+      margin-bottom: 12px;
+      display: block;
+    }
+    .saloum-section-header h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 3vw, 2.6rem);
+      font-weight: 300;
+      letter-spacing: -.025em;
+      color: var(--saloum-nuit);
+      margin-bottom: 12px;
+    }
+    .saloum-section-header p {
+      font-size: 15px;
+      color: var(--ink-3);
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+    .packages-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+    .package-card {
+      background: #fff;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(196,154,60,.15);
+      transition: transform .25s, box-shadow .25s;
+      cursor: pointer;
+    }
+    .package-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 48px rgba(27,77,62,.12);
+    }
+    .package-img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+    }
+    .package-body {
+      padding: 24px;
+    }
+    .package-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--saloum-eau);
+      background: rgba(46,125,110,.08);
+      border: 1px solid rgba(46,125,110,.15);
+      border-radius: 99px;
+      padding: 4px 10px;
+      margin-bottom: 12px;
+    }
+    .package-name {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 400;
+      letter-spacing: -.015em;
+      color: var(--saloum-nuit);
+      margin-bottom: 10px;
+      line-height: 1.2;
+    }
+    .package-desc {
+      font-size: 13px;
+      color: var(--ink-3);
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+    .package-includes {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+    .package-include {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--ink-2);
+    }
+    .package-include i { font-size: 13px; color: var(--saloum-eau); }
+    .package-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+    .package-price {
+      display: flex;
+      flex-direction: column;
+    }
+    .package-price-label { font-size: 11px; color: var(--ink-4); }
+    .package-price-value {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--saloum-vert);
+      font-family: var(--font-display);
+    }
+    .package-price-sub { font-size: 11px; color: var(--ink-4); }
+    .btn-saloum {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 20px;
+      background: var(--saloum-vert);
+      color: #fff;
+      border: none;
+      border-radius: 99px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .18s, transform .15s;
+    }
+    .btn-saloum:hover {
+      background: var(--saloum-eau);
+      transform: translateY(-1px);
+    }
+    .btn-saloum-outline {
+      background: transparent;
+      color: var(--saloum-vert);
+      border: 1.5px solid var(--saloum-vert);
+    }
+    .btn-saloum-outline:hover { background: var(--saloum-sable-lt); }
+
+    /* EXPÉRIENCE IMMERSIVE */
+    .saloum-immersive {
+      background: var(--saloum-nuit);
+      padding: 100px 0;
+      color: #fff;
+    }
+    .immersive-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      border-radius: 20px;
+      overflow: hidden;
+      margin-top: 56px;
+    }
+    .immersive-item {
+      position: relative;
+      overflow: hidden;
+    }
+    .immersive-item:first-child {
+      grid-row: span 2;
+    }
+    .immersive-item img {
+      width: 100%;
+      height: 100%;
+      min-height: 220px;
+      object-fit: cover;
+      filter: brightness(.75);
+      transition: filter .3s, transform .4s;
+    }
+    .immersive-item:hover img {
+      filter: brightness(.9);
+      transform: scale(1.03);
+    }
+    .immersive-caption {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 20px;
+      background: linear-gradient(to top, rgba(13,31,26,.9) 0%, transparent 100%);
+    }
+    .immersive-caption strong {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #fff;
+    }
+    .immersive-caption span {
+      font-size: 11px;
+      color: rgba(255,255,255,.5);
+    }
+
+    /* INFOS PRATIQUES */
+    .saloum-pratique {
+      background: var(--saloum-sable-lt);
+      padding: 90px 0;
+    }
+    .pratique-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .pratique-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 28px;
+      border: 1px solid rgba(27,77,62,.08);
+    }
+    .pratique-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: rgba(27,77,62,.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: var(--saloum-vert);
+      margin-bottom: 16px;
+    }
+    .pratique-card h3 {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      font-weight: 400;
+      color: var(--saloum-nuit);
+      margin-bottom: 10px;
+    }
+    .pratique-card p {
+      font-size: 13px;
+      color: var(--ink-3);
+      line-height: 1.7;
+    }
+
+    /* CARTE */
+    .saloum-map-section {
+      background: var(--saloum-nuit);
+      padding: 80px 0;
+    }
+    #saloumMap {
+      height: 420px;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(196,154,60,.2);
+    }
+
+    /* CTA FINAL */
+    .saloum-cta {
+      background: linear-gradient(135deg, var(--saloum-vert) 0%, var(--saloum-eau) 100%);
+      padding: 100px 0;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .saloum-cta::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .saloum-cta h2 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 300;
+      color: #fff;
+      letter-spacing: -.025em;
+      margin-bottom: 16px;
+    }
+    .saloum-cta p {
+      font-size: 16px;
+      color: rgba(255,255,255,.65);
+      margin-bottom: 36px;
+      line-height: 1.7;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .saloum-intro-grid { grid-template-columns: 1fr; gap: 40px; }
+      .packages-grid { grid-template-columns: 1fr; }
+      .pratique-grid { grid-template-columns: 1fr; }
+      .immersive-grid { grid-template-columns: 1fr; }
+      .immersive-item:first-child { grid-row: span 1; }
+      .saloum-hero h1 { font-size: 2.2rem; }
+      .scroll-hint { display: none; }
+    }
+  </style>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TouristDestination",
+  "name": "Delta du Saloum — Excursions Mar Lodj",
+  "description": "Excursions authentiques dans le Delta du Saloum. Balade en pirogue, pêche traditionnelle, pique-nique dans les bolongs. Organisé avec les acteurs locaux de l'île de Mar Lodj.",
+  "url": "https://dakarplug.netlify.app/saloum.html",
+  "image": "https://dakarplug.netlify.app/images/saloum-hero.jpg",
+  "touristType": ["Nature tourism", "Adventure tourism", "Cultural tourism"],
+  "includesAttraction": [
+    {"@type": "TouristAttraction", "name": "Île de Mar Lodj"},
+    {"@type": "TouristAttraction", "name": "Bolongs du Delta du Saloum"},
+    {"@type": "TouristAttraction", "name": "Réserve de biosphère UNESCO"}
+  ],
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": 13.87,
+    "longitude": -16.68
+  },
+  "provider": {
+    "@type": "TravelAgency",
+    "name": "Dakar PLUG",
+    "url": "https://dakarplug.netlify.app"
+  },
+  "offers": [
+    {
+      "@type": "Offer",
+      "name": "Balade en pirogue dans les bolongs",
+      "price": "15000",
+      "priceCurrency": "XOF",
+      "availability": "https://schema.org/InStock"
+    },
+    {
+      "@type": "Offer",
+      "name": "Pêche traditionnelle",
+      "price": "18000",
+      "priceCurrency": "XOF",
+      "availability": "https://schema.org/InStock"
+    },
+    {
+      "@type": "Offer",
+      "name": "Pique-nique pieds dans l'eau",
+      "price": "22000",
+      "priceCurrency": "XOF",
+      "availability": "https://schema.org/InStock"
+    },
+    {
+      "@type": "Offer",
+      "name": "Île & Culture — Mar Lodj",
+      "price": "35000",
+      "priceCurrency": "XOF",
+      "availability": "https://schema.org/InStock"
+    }
+  ]
+}
+</script>
+</head>
+<body style="background:var(--saloum-nuit)">
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<!-- NAVBAR -->
+<nav class="navbar scrolled" id="navbar" style="background:rgba(13,31,26,.95);border-bottom:1px solid rgba(196,154,60,.15)">
+  <div class="container navbar-inner">
+    <a href="index.html" class="nav-logo" style="color:#fff">
+      <span style="color:var(--saloum-or)">Dakar</span>PLUG
+    </a>
+    <ul class="nav-links" style="--nav-link-color:rgba(255,255,255,.55)">
+      <li><a href="index.html" style="color:rgba(255,255,255,.55)">Accueil</a></li>
+      <li><a href="index.html#activites" style="color:rgba(255,255,255,.55)">Activités Dakar</a></li>
+      <li><a href="saloum.html" style="color:var(--saloum-or);font-weight:500">Delta du Saloum</a></li>
+    </ul>
+    <div class="nav-actions">
+      <div id="navUserArea">
+        <a href="auth.html" class="btn btn-ghost btn-sm" style="color:rgba(255,255,255,.7)">Connexion</a>
+        <a href="auth.html?mode=signup" class="btn btn-sm" style="background:var(--saloum-or);color:#fff;border:none">S'inscrire</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="saloum-hero" role="banner">
+  <div class="saloum-hero-bg" aria-hidden="true"></div>
+  <div class="saloum-hero-overlay" aria-hidden="true"></div>
+  <div class="container saloum-hero-content">
+    <p class="saloum-eyebrow">Réserve de biosphère UNESCO · Delta du Sine-Saloum</p>
+    <h1>
+      L'essentiel<br>du <em>Sine-Saloum</em>
+    </h1>
+    <p class="saloum-hero-sub">
+      Bolongs sauvages, mangroves millénaires, villages de pêcheurs.
+      Des excursions authentiques au cœur de l'une des plus belles
+      réserves naturelles d'Afrique de l'Ouest.
+    </p>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:48px">
+      <button class="btn-saloum" onclick="document.getElementById('packages').scrollIntoView({behavior:'smooth'})">
+        <i class="ti ti-sailboat" style="font-size:15px"></i>
+        Voir les excursions
+      </button>
+      <a href="#carte" class="btn-saloum btn-saloum-outline">
+        <i class="ti ti-map-pin" style="font-size:14px"></i>
+        Localiser sur la carte
+      </a>
+    </div>
+    <div class="saloum-hero-stats">
+      <div class="saloum-stat"><strong>Mar Lodj</strong><span>Île principale</span></div>
+      <div class="saloum-stat"><strong>4</strong><span>Excursions</span></div>
+      <div class="saloum-stat"><strong>180 km</strong><span>De Dakar</span></div>
+      <div class="saloum-stat"><strong>UNESCO</strong><span>Réserve classée</span></div>
+    </div>
+  </div>
+  <div class="scroll-hint" aria-hidden="true">
+    <span>Découvrir</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ═══ INTRO ═══ -->
+<section class="saloum-intro">
+  <div class="container">
+    <div class="saloum-intro-grid">
+      <div class="saloum-intro-text">
+        <p class="saloum-section-eyebrow" style="text-align:left">Notre approche</p>
+        <h2>Un territoire préservé,<br>des <span>rencontres vraies</span></h2>
+        <p>
+          Le Delta du Saloum, c'est 180 000 hectares de bolongs,
+          d'îles et de mangroves classés réserve de biosphère par l'UNESCO.
+          Loin du tourisme de masse, Mar Lodj et ses îles voisines
+          vivent encore au rythme des marées et des piroguiers.
+        </p>
+        <p>
+          Nos excursions sont organisées directement avec les acteurs
+          locaux — piroguiers, guides et gérants de campements de l'île.
+          Chaque sortie finance directement les familles du delta.
+        </p>
+        <div class="saloum-features">
+          <div class="saloum-feature">
+            <div class="saloum-feature-icon"><i class="ti ti-users" aria-hidden="true"></i></div>
+            <div class="saloum-feature-text">
+              <strong>Acteurs locaux</strong>
+              <span>Piroguiers, guides et campements de Mar Lodj en partenariat direct</span>
+            </div>
+          </div>
+          <div class="saloum-feature">
+            <div class="saloum-feature-icon"><i class="ti ti-leaf" aria-hidden="true"></i></div>
+            <div class="saloum-feature-text">
+              <strong>Tourisme responsable</strong>
+              <span>Groupes limités, respect des écosystèmes, aucun moteur dans les bolongs</span>
+            </div>
+          </div>
+          <div class="saloum-feature">
+            <div class="saloum-feature-icon"><i class="ti ti-brand-whatsapp" aria-hidden="true"></i></div>
+            <div class="saloum-feature-text">
+              <strong>Réservation simple</strong>
+              <span>En ligne ou sur WhatsApp, confirmation immédiate par QR code</span>
+            </div>
+          </div>
+          <div class="saloum-feature">
+            <div class="saloum-feature-icon"><i class="ti ti-calendar" aria-hidden="true"></i></div>
+            <div class="saloum-feature-text">
+              <strong>Sur mesure</strong>
+              <span>Départs depuis Dakar, Ndangane, Aeroport ou directement depuis l'île</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="saloum-intro-image">
+        <img src="images/saloum-1.jpg"
+             alt="Pirogue dans les bolongs du Delta du Saloum" loading="lazy">
+        <div class="saloum-intro-image-badge">
+          <strong>Île de Mar Lodj</strong>
+          <span>Delta du Sine-Saloum, Sénégal</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PACKAGES ═══ -->
+<section class="saloum-packages" id="packages">
+  <div class="container">
+    <div class="saloum-section-header">
+      <span class="saloum-section-eyebrow">Nos excursions</span>
+      <h2>Choisissez votre aventure</h2>
+      <p>Toutes les excursions incluent les équipements de sécurité,
+         l'encadrement local et le transport en pirogue traditionnelle.</p>
+    </div>
+
+    <div class="packages-grid" id="packagesGrid">
+
+      <!-- PACK 1 : BALADE EN PIROGUE -->
+      <div class="package-card" onclick="ouvrirReservation(1)">
+        <img class="package-img"
+             src="images/saloum-2.jpg"
+             alt="Balade en pirogue dans les bolongs" loading="lazy">
+        <div class="package-body">
+          <div class="package-tag">
+            <i class="ti ti-sailboat" style="font-size:11px"></i>
+            Demi-journée
+          </div>
+          <h3 class="package-name">Balade dans les bolongs</h3>
+          <p class="package-desc">
+            Explorez les canaux naturels du delta à bord d'une pirogue traditionnelle.
+            Mangroves, oiseaux migrateurs et silence absolu.
+          </p>
+          <div class="package-includes">
+            <div class="package-include">
+              <i class="ti ti-check" aria-hidden="true"></i>
+              Pirogue traditionnelle + piroguier local
+            </div>
+            <div class="package-include">
+              <i class="ti ti-check" aria-hidden="true"></i>
+              Guide naturaliste francophone
+            </div>
+            <div class="package-include">
+              <i class="ti ti-check" aria-hidden="true"></i>
+              Eau fraîche et gilets de sauvetage
+            </div>
+            <div class="package-include">
+              <i class="ti ti-clock" style="color:var(--saloum-or)" aria-hidden="true"></i>
+              3 à 4 heures · Départ matin ou soir
+            </div>
+          </div>
+          <div class="package-footer">
+            <div class="package-price">
+              <span class="package-price-label">À partir de</span>
+              <span class="package-price-value">5 000 FCFA</span>
+              <span class="package-price-sub">par personne</span>
+            </div>
+            <button class="btn-saloum" onclick="ouvrirReservation(1);event.stopPropagation()">
+              Réserver <i class="ti ti-arrow-right" style="font-size:13px"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PACK 2 : PÊCHE TRADITIONNELLE -->
+      <div class="package-card" onclick="ouvrirReservation(2)">
+        <img class="package-img"
+             src="images/saloum-3.jpg"
+             alt="Pêche traditionnelle dans le Saloum" loading="lazy">
+        <div class="package-body">
+          <div class="package-tag">
+            <i class="ti ti-fish" style="font-size:11px"></i>
+            Matinée
+          </div>
+          <h3 class="package-name">Pêche traditionnelle</h3>
+          <p class="package-desc">
+            Sortie en mer avec les pêcheurs de Mar Lodj. Filets, lignes et
+            techniques ancestrales. Le poisson du jour finit sur votre table.
+          </p>
+          <div class="package-includes">
+            <div class="package-include">
+              <i class="ti ti-check" aria-hidden="true"></i>
+              Sortie avec pêcheurs locaux
+            </div>
+            <div class="package-include">
+              <i class="ti ti-check" aria-hidden="true"></i>
+              Matériel de pêche fourni
+            </div>
+            <div class="package-include">
+              <i class="ti ti-check" aria-hidden="true"></i>
+              Dégustation du poisson pêché (option)
+            </div>
+            <div class="package-include">
+              <i class="ti ti-clock" style="color:var(--saloum-or)" aria-hidden="true"></i>
+              4 à 5 heures · Départ à l'aube
+            </div>
+          </div>
+          <div class="package-footer">
+            <div class="package-price">
+              <span class="package-price-label">À partir de</span>
+              <span class="package-price-value">"35 000 FCFA</span>
+              <span class="package-price-sub">par personne</span>
+            </div>
+            <button class="btn-saloum" onclick="ouvrirReservation(2);event.stopPropagation()">
+              Réserver <i class="ti ti-arrow-right" style="font-size:13px"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PACK 3 : PICNIC BOLONGS -->
+      <div class="package-card" onclick="ouvrirReservation(3)">
+        <img class="package-img"
+             src="images/saloum-4.jpg"
+             alt="Pique-nique pieds dans l'eau dans les bolongs" loading="lazy">
+        <div class="package-body">
+          <div class="package-tag" style="color:var(--saloum-or);background:rgba(196,154,60,.08);border-color:rgba(196,154,60,.2)">
+            <i class="ti ti-star-filled" style="font-size:11px"></i>
+            Coup de cœur
+          </div>
+          <h3 class="package-name">Pique-nique pieds dans l'eau</h3>
+          <p class="package-desc">
+            Pirogue jusqu'à un banc de sable isolé. Installation sur l'eau,
+            repas préparé par le campement, coucher de soleil sur les bolongs.
+          </p>
+          <div class="package-includes">
+            <div class="package-include">
+              <i class="ti ti-check" aria-hidden="true"></i>
+              Transport aller-retour en pirogue
+            </div>
+            <div class="package-include">
+              <i class="ti ti-check" aria-hidden="true"></i>
+              Repas sénégalais préparé sur place
+            </div>
+            <div class="package-include">
+              <i class="ti ti-check" aria-hidden="true"></i>
+              Boissons fraîches incluses
+            </div>
+            <div class="package-include">
+              <i class="ti ti-clock" style="color:var(--saloum-or)" aria-hidden="true"></i>
+              Journée — coucher de soleil
+            </div>
+          </div>
+          <div class="package-footer">
+            <div class="package-price">
+              <span class="package-price-label">À partir de</span>
+              <span class="package-price-value">25 000 FCFA</span>
+              <span class="package-price-sub">par personne</span>
+            </div>
+            <button class="btn-saloum" onclick="ouvrirReservation(3);event.stopPropagation()">
+              Réserver <i class="ti ti-arrow-right" style="font-size:13px"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PACK 4 : VISITE COMPLÈTE -->
+      <div class="package-card" onclick="ouvrirReservation(4)">
+        <img class="package-img"
+             src="images/saloum-5.jpg"
+             alt="Visite de l'île de Mar Lodj et villages du Saloum" loading="lazy">
+        <div class="package-body">
+          <div class="package-tag">
+            <i class="ti ti-compass" style="font-size:11px"></i>
+            Journée complète
+          </div>
+          <h3 class="package-name">Île & Culture — Mar Lodj</h3>
+          <p class="package-desc">
+            Traversée vers Mar Lodj, visite guidée de l'île, rencontre
+            avec les villageois, sites du delta et déjeuner local inclus.
+          </p>
+          <div class="package-includes">
+            <div class="package-include">
+              <i class="ti ti-check" aria-hidden="true"></i>
+              Guide local certifié
+            </div>
+            <div class="package-include">
+              <i class="ti ti-check" aria-hidden="true"></i>
+              Déjeuner sénégalais au campement
+            </div>
+            <div class="package-include">
+              <i class="ti ti-check" aria-hidden="true"></i>
+              Visite villages + sites naturels
+            </div>
+            <div class="package-include">
+              <i class="ti ti-clock" style="color:var(--saloum-or)" aria-hidden="true"></i>
+              Journée · 7h — 18h
+            </div>
+          </div>
+          <div class="package-footer">
+            <div class="package-price">
+              <span class="package-price-label">À partir de</span>
+              <span class="package-price-value">35 000 FCFA</span>
+              <span class="package-price-sub">par personne</span>
+            </div>
+            <button class="btn-saloum" onclick="ouvrirReservation(4);event.stopPropagation()">
+              Réserver <i class="ti ti-arrow-right" style="font-size:13px"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══ GALERIE IMMERSIVE ═══ -->
+<section class="saloum-immersive">
+  <div class="container">
+    <div class="saloum-section-header">
+      <span class="saloum-section-eyebrow" style="color:var(--saloum-or)">Le cadre</span>
+      <h2 style="color:#fff">Un paysage à part</h2>
+    </div>
+    <div class="immersive-grid">
+      <div class="immersive-item">
+        <img src="images/saloum-6.jpg"
+             alt="Mangroves du Delta du Saloum" loading="lazy">
+        <div class="immersive-caption">
+          <strong>Les bolongs</strong>
+          <span>Canaux naturels entre les îles</span>
+        </div>
+      </div>
+      <div class="immersive-item">
+        <img src="images/saloum-7.jpg"
+             alt="Coucher de soleil sur le Delta du Saloum" loading="lazy">
+        <div class="immersive-caption">
+          <strong>Coucher de soleil</strong>
+          <span>Lumière unique sur les eaux</span>
+        </div>
+      </div>
+      <div class="immersive-item">
+        <img src="images/saloum-8.jpg"
+             alt="Oiseaux migrateurs dans les mangroves" loading="lazy">
+        <div class="immersive-caption">
+          <strong>Faune sauvage</strong>
+          <span>Pélicans, lamantins, dauphins</span>
+        </div>
+      </div>
+      <div class="immersive-item">
+        <img src="images/saloum-9.jpg"
+             alt="Village de pêcheurs à Mar Lodj" loading="lazy">
+        <div class="immersive-caption">
+          <strong>Mar Lodj</strong>
+          <span>Village de pêcheurs authentique</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ INFOS PRATIQUES ═══ -->
+<section class="saloum-pratique">
+  <div class="container">
+    <div class="saloum-section-header">
+      <span class="saloum-section-eyebrow">Avant de partir</span>
+      <h2 style="color:var(--saloum-nuit)">Informations pratiques</h2>
+    </div>
+    <div class="pratique-grid">
+      <div class="pratique-card">
+        <div class="pratique-icon"><i class="ti ti-car" aria-hidden="true"></i></div>
+        <h3>Comment y aller</h3>
+        <p>Depuis Dakar, 3h de route jusqu'à Foundiougne ou Karang,
+           puis traversée en pirogue vers Mar Lodj (15 à 30 min).
+           Nous pouvons organiser le transport depuis Dakar sur demande.</p>
+      </div>
+      <div class="pratique-card">
+        <div class="pratique-icon"><i class="ti ti-sun" aria-hidden="true"></i></div>
+        <h3>Meilleure période</h3>
+        <p>Novembre à mai : temps sec, mer calme, idéal pour les pirogues.
+           Juin à octobre : saison des pluies, végétation luxuriante,
+           moins de monde mais navigation parfois délicate.</p>
+      </div>
+      <div class="pratique-card">
+        <div class="pratique-icon"><i class="ti ti-backpack" aria-hidden="true"></i></div>
+        <h3>Ce qu'il faut apporter</h3>
+        <p>Crème solaire, chapeau, lunettes de soleil, vêtements légers,
+           chaussures fermées pour l'île, appareil photo étanche recommandé.
+           Gilets de sauvetage fournis par nos partenaires.</p>
+      </div>
+      <div class="pratique-card">
+        <div class="pratique-icon"><i class="ti ti-users-group" aria-hidden="true"></i></div>
+        <h3>Taille des groupes</h3>
+        <p>Minimum 2 personnes, maximum 8 par pirogue.
+           Pour les groupes de 9 à 20 personnes, nous organisons
+           plusieurs pirogues en convoi. Tarifs dégressifs dès 4 personnes.</p>
+      </div>
+      <div class="pratique-card">
+        <div class="pratique-icon"><i class="ti ti-credit-card" aria-hidden="true"></i></div>
+        <h3>Paiement</h3>
+        <p>Wave, Orange Money ou espèces sur place.
+           Acompte de 30% à la réservation en ligne.
+           Solde à régler au départ de l'excursion.</p>
+      </div>
+      <div class="pratique-card">
+        <div class="pratique-icon"><i class="ti ti-calendar-x" aria-hidden="true"></i></div>
+        <h3>Annulation</h3>
+        <p>Annulation gratuite jusqu'à 48h avant l'excursion.
+           En cas de conditions météo défavorables, nous reportons
+           ou remboursons intégralement sans frais.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CARTE ═══ -->
+<section class="saloum-map-section" id="carte">
+  <div class="container">
+    <div class="saloum-section-header" style="margin-bottom:36px">
+      <span class="saloum-section-eyebrow">Localisation</span>
+      <h2 style="color:#fff">Mar Lodj & le Delta du Saloum</h2>
+    </div>
+    <div id="saloumMap" role="application" aria-label="Carte du Delta du Saloum"></div>
+  </div>
+</section>
+
+<!-- ═══ CTA FINAL ═══ -->
+<section class="saloum-cta">
+  <div class="container" style="position:relative;z-index:1">
+    <p class="saloum-section-eyebrow" style="color:rgba(255,255,255,.5);text-align:center;margin-bottom:16px">
+      Réservation en ligne
+    </p>
+    <h2>Prêt pour l'aventure ?</h2>
+    <p>
+      Choisissez votre excursion et réservez en quelques secondes.<br>
+      Confirmation immédiate par WhatsApp et QR code.
+    </p>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+      <button class="btn-saloum"
+              style="background:#fff;color:var(--saloum-vert);font-size:14px;padding:14px 28px"
+              onclick="document.getElementById('packages').scrollIntoView({behavior:'smooth'})">
+        <i class="ti ti-sailboat" style="font-size:16px"></i>
+        Choisir une excursion
+      </button>
+      <a href="https://wa.me/779913729?text=Bonjour, je souhaite réserver une excursion dans le Delta du Saloum"
+         target="_blank" rel="noopener noreferrer"
+         class="btn-saloum btn-saloum-outline"
+         style="border-color:rgba(255,255,255,.4);color:#fff;font-size:14px;padding:14px 28px">
+        <i class="ti ti-brand-whatsapp" style="font-size:16px"></i>
+        Demander par WhatsApp
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer style="background:var(--saloum-nuit);padding:28px 0;border-top:1px solid rgba(196,154,60,.1)">
+  <div class="container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+    <a href="index.html" class="nav-logo" style="color:#fff">
+      <span style="color:var(--saloum-or)">Dakar</span>PLUG
+    </a>
+    <div style="display:flex;gap:20px;font-size:12px;color:rgba(255,255,255,.3)">
+      <a href="cgv.html" style="color:rgba(255,255,255,.3)">Conditions générales</a>
+      <a href="cgv.html#remboursement" style="color:rgba(255,255,255,.3)">Remboursement</a>
+      <a href="cgv.html#contact" style="color:rgba(255,255,255,.3)">Contact</a>
+    </div>
+    <span style="font-size:12px;color:rgba(255,255,255,.2)">© 2025 Dakar PLUG</span>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+
+// ── Sécurité XSS ──
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');
+}
+
+// ── Navbar scroll ──
+window.addEventListener('scroll', () => {
+  const nav = document.getElementById('navbar');
+  nav.style.background = window.scrollY > 60
+    ? 'rgba(13,31,26,.98)'
+    : 'rgba(13,31,26,.95)';
+});
+
+// ── AUTH navbar ──
+async function checkAuth() {
+  try {
+    const { Auth } = window.DakarApp;
+    const user = await Auth.getUser();
+    if (!user) return;
+    const init = (user.user_metadata?.prenom || user.email || 'U')[0].toUpperCase();
+    document.getElementById('navUserArea').innerHTML =
+      `<a href="espace-utilisateur.html">
+         <div class="nav-avatar" style="background:var(--saloum-or)">${esc(init)}</div>
+       </a>`;
+  } catch(e) {}
+}
+
+// ── Réservation ──
+// IDs correspondant aux activités Saloum dans Supabase
+// (à mettre à jour avec les vrais IDs après saisie dans le dashboard)
+const SALOUM_IDS = {
+  1: null, // Balade bolongs    → remplacer par l'ID Supabase réel
+  2: null, // Pêche             → remplacer par l'ID Supabase réel
+  3: null, // Picnic bolongs    → remplacer par l'ID Supabase réel
+  4: null, // Île & Culture     → remplacer par l'ID Supabase réel
+};
+
+function ouvrirReservation(pack) {
+  const id = SALOUM_IDS[pack];
+  if (id) {
+    window.location.href = `reservation.html?id=${id}`;
+  } else {
+    // Pas encore dans Supabase → WhatsApp
+    const { WHATSAPP_NUMBER } = window.DakarApp;
+    const noms = {
+      1:'Balade dans les bolongs',
+      2:'Pêche traditionnelle',
+      3:'Pique-nique pieds dans l\'eau',
+      4:'Île & Culture — Mar Lodj',
+    };
+    const msg = encodeURIComponent(
+      `Bonjour, je souhaite réserver l'excursion "${noms[pack]}" dans le Delta du Saloum.\n` +
+      `Pouvez-vous me confirmer les disponibilités ?`
+    );
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank', 'noopener,noreferrer');
+  }
+}
+
+// ── Carte Leaflet ──
+function initMap() {
+  const map = L.map('saloumMap', {
+    center: [13.8500, -16.7000],
+    zoom: 10,
+    scrollWheelZoom: false,
+  });
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 18,
+  }).addTo(map);
+
+  const icoOr = L.divIcon({
+    className: '',
+    html: `<div style="width:12px;height:12px;background:#C49A3C;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 4px rgba(196,154,60,.25)"></div>`,
+    iconSize: [12,12], iconAnchor: [6,6], popupAnchor: [0,-10],
+  });
+  const icoVert = L.divIcon({
+    className: '',
+    html: `<div style="width:10px;height:10px;background:#1B4D3E;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 3px rgba(27,77,62,.2)"></div>`,
+    iconSize: [10,10], iconAnchor: [5,5], popupAnchor: [0,-8],
+  });
+
+  // Points principaux
+  const points = [
+    { lat:13.8700, lng:-16.6800, nom:'Île de Mar Lodj', desc:'Base principale des excursions', icon:icoOr },
+    { lat:14.1333, lng:-16.4833, nom:'Foundiougne', desc:'Point de départ depuis la côte', icon:icoVert },
+    { lat:13.7600, lng:-16.7500, nom:'Île de Dionewar', desc:'Village de pêcheurs traditionnel', icon:icoVert },
+    { lat:13.9500, lng:-16.5800, nom:'Karang', desc:'Accès ferry depuis la Gambie', icon:icoVert },
+    { lat:14.0500, lng:-16.6000, nom:'Île aux Oiseaux', desc:'Site ornithologique exceptionnel', icon:icoVert },
+    { lat:13.8000, lng:-16.8000, nom:'Betanti', desc:'Bolongs sauvages — pique-nique', icon:icoVert },
+  ];
+
+  points.forEach(p => {
+    L.marker([p.lat, p.lng], { icon: p.icon }).addTo(map).bindPopup(`
+      <div style="font-family:'Inter',sans-serif;min-width:160px">
+        <div style="font-weight:600;font-size:13px;color:#0D1F1A;margin-bottom:3px">${esc(p.nom)}</div>
+        <div style="font-size:12px;color:#7A7A7A">${esc(p.desc)}</div>
+      </div>
+    `);
+  });
+
+  // Zone UNESCO
+  L.circle([13.85, -16.70], {
+    color: '#C49A3C',
+    fillColor: 'rgba(196,154,60,.05)',
+    fillOpacity: 1,
+    weight: 1,
+    radius: 40000,
+    dashArray: '6 4',
+  }).addTo(map).bindPopup('<div style="font-size:12px;font-weight:600">Réserve de biosphère UNESCO</div>');
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+  checkAuth();
+  initMap();
+});
+</script>
+</body>
+</html>

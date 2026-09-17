@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Réservation — Dakar PLUG</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+  <link rel="manifest" href="manifest.json">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <style>
+    /* Sélecteur de période jour / nuit */
+    .periode-toggle {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .periode-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border: 1.5px solid var(--line-2);
+      border-radius: var(--r-md);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink-3);
+      background: var(--white);
+      transition: all .18s;
+    }
+    .periode-btn.active.jour {
+      border-color: var(--gold);
+      background: var(--gold-lt);
+      color: var(--gold);
+    }
+    .periode-btn.active.nuit {
+      border-color: var(--teal);
+      background: var(--teal-lt);
+      color: var(--teal);
+    }
+    .periode-btn i { font-size: 16px; }
+
+    /* Grille de créneaux horaires */
+    .creneaux-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .creneau-btn {
+      padding: 9px 8px;
+      border: 1.5px solid var(--line-2);
+      border-radius: var(--r-sm);
+      background: var(--white);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: center;
+      color: var(--ink-2);
+      transition: all .15s;
+    }
+    .creneau-btn:hover:not(.indisponible) {
+      border-color: var(--ink-3);
+      background: var(--paper-2);
+    }
+    .creneau-btn.selected.jour {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: #fff;
+    }
+    .creneau-btn.selected.nuit {
+      background: var(--teal);
+      border-color: var(--teal);
+      color: #fff;
+    }
+    .creneau-btn.indisponible {
+      opacity: .35;
+      cursor: not-allowed;
+      text-decoration: line-through;
+    }
+
+    /* Indicateur de numéro international */
+    .tel-wrapper { position: relative; }
+    .country-code-picker {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      z-index: 2;
+    }
+    .country-code-picker span {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink-2);
+    }
+    .country-code-picker i { font-size: 11px; color: var(--ink-3); }
+    .tel-input-with-code { padding-left: 90px !important; }
+
+    .country-dropdown {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: var(--white);
+      border: 1px solid var(--line-2);
+      border-radius: var(--r-md);
+      box-shadow: 0 8px 24px rgba(13,13,13,.12);
+      z-index: 100;
+      max-height: 260px;
+      overflow-y: auto;
+      display: none;
+    }
+    .country-dropdown.open { display: block; animation: fadeIn .15s; }
+    .country-search {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      background: var(--white);
+    }
+    .country-search input {
+      border: 1px solid var(--line-2) !important;
+      padding: 6px 10px !important;
+      font-size: 12px !important;
+      border-radius: var(--r-xs) !important;
+    }
+    .country-item {
+      padding: 9px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--ink-2);
+      transition: background .1s;
+    }
+    .country-item:hover { background: var(--paper-2); }
+    .country-item .flag { font-size: 16px; }
+    .country-item .dial { color: var(--ink-3); font-size: 12px; margin-left: auto; }
+
+    @keyframes fadeIn { from { opacity:0; transform: translateY(-4px); } to { opacity:1; transform:none; } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<nav class="navbar" id="navbar">
+  <div class="container navbar-inner">
+    <a href="index.html" class="nav-logo"><span>Dakar</span>PLUG</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="index.html#activites">Activités</a></li>
+      <li><a href="saloum.html" style="color:var(--teal);font-weight:500">Delta du Saloum</a></li>
+    </ul>
+    <div class="nav-actions">
+      <div id="navUserArea">
+        <a href="auth.html" class="btn btn-ghost btn-sm">Connexion</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main class="reservation-page">
+  <div class="container">
+
+    <div style="margin-bottom:28px">
+      <a href="javascript:history.back()"
+         style="font-size:13px;color:var(--teal);font-weight:500;display:inline-flex;align-items:center;gap:6px">
+        <i class="ti ti-arrow-left" style="font-size:14px"></i> Retour à l'activité
+      </a>
+    </div>
+
+    <!-- ÉTAPES -->
+    <div class="resa-steps" role="list">
+      <div class="step-item active" id="step1" role="listitem">
+        <div class="step-circle">1</div>
+        <span class="step-label">Détails</span>
+      </div>
+      <div class="step-item" id="step2" role="listitem">
+        <div class="step-circle">2</div>
+        <span class="step-label">Coordonnées</span>
+      </div>
+      <div class="step-item" id="step3" role="listitem">
+        <div class="step-circle">3</div>
+        <span class="step-label">Paiement</span>
+      </div>
+      <div class="step-item" id="step4" role="listitem">
+        <div class="step-circle"><i class="ti ti-check" style="font-size:12px"></i></div>
+        <span class="step-label">Confirmation</span>
+      </div>
+    </div>
+
+    <div class="resa-layout">
+
+      <!-- ════ GAUCHE ════ -->
+      <div>
+
+        <!-- STEP 1 -->
+        <div id="panelStep1" class="resa-panel">
+          <h2 class="resa-panel-title">Date et horaire</h2>
+
+          <!-- SÉLECTEUR PÉRIODE -->
+          <div id="periodeContainer" style="display:none;margin-bottom:20px">
+            <p style="font-size:12px;font-weight:500;color:var(--ink-3);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">
+              Période
+            </p>
+            <div class="periode-toggle">
+              <button type="button" class="periode-btn jour active" id="btnJour" onclick="selectPeriode('jour')">
+                <i class="ti ti-sun" aria-hidden="true"></i> Journée
+              </button>
+              <button type="button" class="periode-btn nuit" id="btnNuit" onclick="selectPeriode('nuit')">
+                <i class="ti ti-moon" aria-hidden="true"></i> Soirée / Nuit
+              </button>
+            </div>
+          </div>
+
+          <!-- CALENDRIER -->
+          <div class="cal-wrapper" role="region" aria-label="Calendrier">
+            <div class="cal-header">
+              <button class="cal-nav" id="calPrev" aria-label="Mois précédent">
+                <i class="ti ti-chevron-left" style="font-size:13px"></i>
+              </button>
+              <h3 id="calTitle" style="font-size:14px;font-weight:500" aria-live="polite"></h3>
+              <button class="cal-nav" id="calNext" aria-label="Mois suivant">
+                <i class="ti ti-chevron-right" style="font-size:13px"></i>
+              </button>
+            </div>
+            <div class="cal-grid" id="calGrid" role="grid"></div>
+          </div>
+
+          <div class="divider" style="margin:20px 0"></div>
+
+          <!-- CRÉNEAUX HORAIRES DYNAMIQUES -->
+          <div id="creneauxContainer" style="display:none">
+            <p style="font-size:12px;font-weight:500;color:var(--ink-3);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">
+              Horaire disponible
+            </p>
+            <div class="creneaux-grid" id="creneauxGrid" role="group" aria-label="Choisir un horaire"></div>
+          </div>
+
+          <!-- Sélect horaire classique (affiché si pas de créneaux configurés) -->
+          <div id="heureClassiqueContainer" style="margin-bottom:20px">
+            <div class="field">
+              <label for="heureSelect">Horaire</label>
+              <select id="heureSelect" aria-required="true">
+                <option value="">Choisir un horaire</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- NOMBRE DE PERSONNES -->
+          <div class="field" style="margin-bottom:24px">
+            <label>Nombre de personnes</label>
+            <div style="display:flex;align-items:center;gap:16px;padding:8px 0">
+              <button type="button" class="btn btn-outline btn-sm" onclick="changeNb(-1)" aria-label="Moins">
+                <i class="ti ti-minus" style="font-size:12px"></i>
+              </button>
+              <span id="nbDisplay" style="font-size:1.2rem;font-weight:600;min-width:28px;text-align:center">1</span>
+              <button type="button" class="btn btn-outline btn-sm" onclick="changeNb(1)" aria-label="Plus">
+                <i class="ti ti-plus" style="font-size:12px"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- OPTIONS -->
+          <div id="optionsContainer" style="margin-bottom:24px"></div>
+
+          <button class="btn btn-primary btn-lg" style="width:100%" onclick="goToStep(2)" type="button">
+            Continuer <i class="ti ti-arrow-right" style="font-size:14px"></i>
+          </button>
+        </div>
+
+        <!-- STEP 2 : COORDONNÉES -->
+        <div id="panelStep2" class="resa-panel" style="display:none">
+          <h2 class="resa-panel-title">Vos coordonnées</h2>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+            <div class="field">
+              <label for="prenomInput">Prénom</label>
+              <input type="text" id="prenomInput" placeholder="Aminata" maxlength="50"
+                     autocomplete="given-name" aria-required="true">
+            </div>
+            <div class="field">
+              <label for="nomInput">Nom</label>
+              <input type="text" id="nomInput" placeholder="Diallo" maxlength="50"
+                     autocomplete="family-name" aria-required="true">
+            </div>
+          </div>
+
+          <div class="field" style="margin-bottom:14px">
+            <label for="emailInput">Email</label>
+            <input type="email" id="emailInput" placeholder="votre@email.com"
+                   maxlength="100" autocomplete="email" aria-required="true">
+          </div>
+
+          <!-- TÉLÉPHONE AVEC INDICATIF INTERNATIONAL -->
+          <div class="field" style="margin-bottom:6px">
+            <label for="telInput">Téléphone</label>
+            <div class="tel-wrapper">
+              <!-- Sélecteur indicatif pays -->
+              <div class="country-code-picker" id="countryPicker" onclick="toggleDropdown()" aria-label="Choisir le pays">
+                <span id="selectedFlag">🇸🇳</span>
+                <span id="selectedCode">+221</span>
+                <i class="ti ti-chevron-down"></i>
+              </div>
+
+              <input type="tel" id="telInput"
+                     placeholder="77 123 45 67"
+                     maxlength="20"
+                     autocomplete="tel-national"
+                     class="tel-input-with-code"
+                     aria-required="true"
+                     aria-label="Numéro de téléphone">
+
+              <!-- Dropdown pays -->
+              <div class="country-dropdown" id="countryDropdown">
+                <div class="country-search">
+                  <input type="text" id="countrySearch" placeholder="Rechercher un pays…"
+                         oninput="filterCountries(this.value)"
+                         onclick="event.stopPropagation()">
+                </div>
+                <div id="countryList"></div>
+              </div>
+            </div>
+            <span class="field-hint" id="telHint">Numéro complet : 77 123 45 67</span>
+          </div>
+
+          <div class="field" style="margin-bottom:24px">
+            <label for="noteClient">Note pour l'organisateur (optionnel)</label>
+            <textarea id="noteClient" rows="3"
+                      placeholder="Demandes spéciales, allergies, langue préférée…"
+                      maxlength="300"></textarea>
+          </div>
+
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-outline" onclick="goToStep(1)" type="button">
+              <i class="ti ti-arrow-left" style="font-size:13px"></i> Retour
+            </button>
+            <button class="btn btn-primary" style="flex:1" onclick="goToStep(3)" type="button">
+              Continuer <i class="ti ti-arrow-right" style="font-size:13px"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 3 : PAIEMENT -->
+        <div id="panelStep3" class="resa-panel" style="display:none">
+          <h2 class="resa-panel-title">Paiement</h2>
+
+          <p style="font-size:13px;color:var(--ink-3);margin-bottom:20px;line-height:1.6">
+            Choisissez votre méthode de paiement. Vous serez redirigé vers la plateforme
+            sécurisée pour finaliser.
+          </p>
+
+          <div class="payment-methods" role="radiogroup" aria-label="Méthode de paiement">
+            <div class="pay-method selected" id="pmWave"
+                 onclick="selectPayment('wave')" role="radio" tabindex="0" aria-checked="true">
+              <div class="pm-logo" style="font-weight:800;font-size:1.1rem;color:var(--teal)">W</div>
+              <div class="pm-name">Wave</div>
+            </div>
+            <div class="pay-method" id="pmOrange"
+                 onclick="selectPayment('orange')" role="radio" tabindex="0" aria-checked="false">
+              <div class="pm-logo" style="font-weight:800;font-size:1.1rem;color:var(--gold)">O</div>
+              <div class="pm-name">Orange Money</div>
+            </div>
+            <div class="pay-method" id="pmCarte"
+                 onclick="selectPayment('carte')" role="radio" tabindex="0" aria-checked="false">
+              <div class="pm-logo"><i class="ti ti-credit-card" style="font-size:18px;color:var(--ink-3)"></i></div>
+              <div class="pm-name">Carte</div>
+            </div>
+            <div class="pay-method" id="pmEspeces"
+                 onclick="selectPayment('especes')" role="radio" tabindex="0" aria-checked="false">
+              <div class="pm-logo"><i class="ti ti-cash" style="font-size:18px;color:var(--ink-3)"></i></div>
+              <div class="pm-name">Sur place</div>
+            </div>
+          </div>
+
+          <!-- INFO WAVE -->
+          <div id="instrWave"
+               style="background:rgba(26,101,96,.05);border:1px solid rgba(26,101,96,.15);border-radius:var(--r-md);padding:18px;margin-bottom:20px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+              <i class="ti ti-shield-check" style="font-size:16px;color:var(--teal)"></i>
+              <h3 style="font-size:13px;font-weight:600;color:var(--teal)">Paiement Wave sécurisé</h3>
+            </div>
+            <p style="font-size:13px;color:var(--ink-2);line-height:1.7">
+              Vous serez redirigé vers Wave pour finaliser le paiement.<br>
+              Disponible depuis le Sénégal et les pays partenaires Wave.
+            </p>
+            <div style="margin-top:10px;padding:10px 12px;background:rgba(26,101,96,.06);border-radius:var(--r-xs);font-size:13px;font-weight:600;color:var(--teal)">
+              Total : <span id="waveTotal">—</span>
+            </div>
+          </div>
+
+          <!-- INFO ORANGE -->
+          <div id="instrOrange"
+               style="background:rgba(184,146,42,.05);border:1px solid rgba(184,146,42,.15);border-radius:var(--r-md);padding:18px;margin-bottom:20px;display:none">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+              <i class="ti ti-shield-check" style="font-size:16px;color:var(--gold)"></i>
+              <h3 style="font-size:13px;font-weight:600;color:var(--gold)">Orange Money</h3>
+            </div>
+            <p style="font-size:13px;color:var(--ink-2);line-height:1.7">
+              Disponible pour les clients Orange Money Sénégal, Mali, Côte d'Ivoire et pays CEDEAO.
+            </p>
+            <div style="margin-top:10px;padding:10px 12px;background:rgba(184,146,42,.06);border-radius:var(--r-xs);font-size:13px;font-weight:600;color:var(--gold)">
+              Total : <span id="orangeTotal">—</span>
+            </div>
+          </div>
+
+          <!-- INFO CARTE BANCAIRE -->
+          <div id="instrCarte"
+               style="background:var(--paper-2);border:1px solid var(--line);border-radius:var(--r-md);padding:18px;margin-bottom:20px;display:none">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+              <i class="ti ti-credit-card" style="font-size:16px;color:var(--ink-2)"></i>
+              <h3 style="font-size:13px;font-weight:600;color:var(--ink-2)">Carte bancaire internationale</h3>
+            </div>
+            <p style="font-size:13px;color:var(--ink-2);line-height:1.7">
+              Visa, Mastercard, American Express acceptées.<br>
+              Idéal pour les clients internationaux (Europe, USA, Maroc, etc.)
+            </p>
+            <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png" alt="Visa" style="height:20px;object-fit:contain">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png" alt="Mastercard" style="height:20px;object-fit:contain">
+            </div>
+          </div>
+
+          <!-- INFO ESPÈCES -->
+          <div id="instrEspeces"
+               style="background:var(--paper-2);border:1px solid var(--line);border-radius:var(--r-md);padding:18px;margin-bottom:20px;display:none">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              <i class="ti ti-info-circle" style="font-size:16px;color:var(--ink-3)"></i>
+              <h3 style="font-size:13px;font-weight:600;color:var(--ink-2)">Paiement sur place</h3>
+            </div>
+            <p style="font-size:13px;color:var(--ink-2);line-height:1.7">
+              Réservation provisoire confirmée à votre arrivée. Présentez votre QR code.
+            </p>
+          </div>
+
+          <!-- RÉCAP -->
+          <div style="border:1px solid var(--line);border-radius:var(--r-md);padding:16px;margin-bottom:20px">
+            <h3 style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">
+              Récapitulatif
+            </h3>
+            <div id="payRecap" style="display:flex;flex-direction:column;gap:7px;font-size:13px"></div>
+          </div>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin-bottom:20px;font-size:13px">
+            <input type="checkbox" id="cgAccept" style="margin-top:2px;flex-shrink:0">
+            <span style="color:var(--ink-2)">
+              J'accepte les <a href="cgv.html" target="_blank" rel="noopener" style="color:var(--teal)">conditions générales</a>
+              et la <a href="cgv.html#remboursement" target="_blank" rel="noopener" style="color:var(--teal)">politique de remboursement</a>
+            </span>
+          </label>
+
+          <div id="payError" style="display:none;padding:10px 14px;background:rgba(160,40,40,.07);border-radius:var(--r-xs);font-size:13px;color:var(--error);margin-bottom:16px" role="alert"></div>
+
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-outline" onclick="goToStep(2)" type="button">
+              <i class="ti ti-arrow-left" style="font-size:13px"></i> Retour
+            </button>
+            <button class="btn btn-accent btn-lg" style="flex:1"
+                    onclick="confirmerEtPayer()" id="btnConfirmer" type="button">
+              <i class="ti ti-lock" style="font-size:14px"></i>
+              Confirmer et payer
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 4 : CONFIRMATION -->
+        <div id="panelStep4" class="resa-panel" style="display:none">
+          <div class="qr-section">
+            <div style="width:52px;height:52px;border-radius:50%;background:rgba(42,122,82,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+              <i class="ti ti-check" style="font-size:24px;color:var(--success)"></i>
+            </div>
+            <h2 style="font-family:var(--font-display);font-size:1.8rem;font-weight:300;letter-spacing:-.02em;margin-bottom:8px">
+              Réservation confirmée
+            </h2>
+            <p style="color:var(--ink-3);font-size:14px;margin-bottom:4px">Présentez ce QR code à l'arrivée</p>
+            <div class="qr-code-wrapper">
+              <div id="qrCanvas"></div>
+            </div>
+            <p style="font-size:12px;color:var(--ink-3);margin-bottom:4px">Référence</p>
+            <strong id="refCodeVal" style="font-size:1.1rem;letter-spacing:.1em;color:var(--ink);display:block;margin-bottom:20px">—</strong>
+            <div id="confirmRecapText" style="background:var(--paper-2);border-radius:var(--r-md);border:1px solid var(--line);padding:16px;text-align:left;font-size:13px;display:flex;flex-direction:column;gap:8px;margin-bottom:24px"></div>
+            <div id="paiementStatus" style="margin-bottom:20px"></div>
+            <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+              <button class="btn btn-primary" onclick="notifWhatsApp()" type="button">
+                <i class="ti ti-brand-whatsapp" style="font-size:15px"></i>
+                WhatsApp
+              </button>
+              <a href="espace-utilisateur.html#reservations" class="btn btn-outline">Mes réservations</a>
+            </div>
+            <p style="font-size:12px;color:var(--ink-4);margin-top:16px;line-height:1.6">
+              Un email de confirmation vous sera envoyé.<br>Annulation gratuite 24h avant.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ════ DROITE : RÉCAP ════ -->
+      <div>
+        <div style="background:var(--white);border-radius:var(--r-xl);padding:24px;border:1px solid var(--line);position:sticky;top:calc(var(--nav-h) + 20px)">
+          <h3 style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:18px">Votre réservation</h3>
+
+          <div id="recapActivite" style="display:flex;gap:12px;align-items:center;margin-bottom:18px">
+            <div class="skeleton" style="width:60px;height:60px;border-radius:var(--r-sm);flex-shrink:0"></div>
+            <div>
+              <div class="skeleton" style="height:13px;width:140px;border-radius:var(--r-xs);margin-bottom:7px"></div>
+              <div class="skeleton" style="height:11px;width:90px;border-radius:var(--r-xs)"></div>
+            </div>
+          </div>
+
+          <div class="divider" style="margin:14px 0"></div>
+
+          <div style="display:flex;flex-direction:column;gap:9px;font-size:13px">
+            <div style="display:flex;justify-content:space-between;color:var(--ink-3)">
+              <span>Période</span>
+              <span id="recapPeriode" style="font-weight:500;color:var(--ink)">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;color:var(--ink-3)">
+              <span>Date</span>
+              <span id="recapDate" style="font-weight:500;color:var(--ink)">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;color:var(--ink-3)">
+              <span>Heure</span>
+              <span id="recapHeure" style="font-weight:500;color:var(--ink)">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;color:var(--ink-3)">
+              <span>Personnes</span>
+              <span id="recapNb" style="font-weight:500;color:var(--ink)">1</span>
+            </div>
+          </div>
+
+          <div class="divider" style="margin:14px 0"></div>
+
+          <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+            <div style="display:flex;justify-content:space-between;color:var(--ink-3)">
+              <span id="rLineBase">Base</span>
+              <span id="rLineBaseVal">—</span>
+            </div>
+            <div id="rLineOpts" style="display:none;justify-content:space-between;color:var(--ink-3)">
+              <span>Options</span>
+              <span id="rLineOptsVal">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-weight:600;font-size:15px;border-top:1px solid var(--line);padding-top:12px;margin-top:4px">
+              <span>Total</span>
+              <span id="rTotal">—</span>
+            </div>
+          </div>
+
+          <div style="margin-top:14px;padding:10px 12px;background:rgba(42,122,82,.06);border-radius:var(--r-xs);font-size:12px;color:var(--success);display:flex;align-items:center;gap:6px">
+            <i class="ti ti-shield-check" style="font-size:13px"></i>
+            Annulation gratuite 24h avant
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer style="background:var(--ink);padding:24px 0;margin-top:60px">
+  <div class="container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+    <a href="index.html" class="nav-logo" style="color:#fff"><span style="color:var(--accent)">Dakar</span>PLUG</a>
+    <span style="font-size:12px;color:rgba(255,255,255,.3)">© 2026 Dakar PLUG</span>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="paiement.js"></script>
+<script>
+
+// ════════════════════════════════════════════
+//  PAYS ET INDICATIFS TÉLÉPHONIQUES
+// ════════════════════════════════════════════
+const COUNTRIES = [
+  { flag:'🇸🇳', name:'Sénégal',         code:'+221' },
+  { flag:'🇲🇱', name:'Mali',            code:'+223' },
+  { flag:'🇨🇮', name:"Côte d'Ivoire",   code:'+225' },
+  { flag:'🇧🇫', name:'Burkina Faso',    code:'+226' },
+  { flag:'🇬🇳', name:'Guinée',          code:'+224' },
+  { flag:'🇲🇷', name:'Mauritanie',      code:'+222' },
+  { flag:'🇬🇲', name:'Gambie',          code:'+220' },
+  { flag:'🇬🇼', name:'Guinée-Bissau',   code:'+245' },
+  { flag:'🇨🇻', name:'Cap-Vert',        code:'+238' },
+  { flag:'🇲🇦', name:'Maroc',           code:'+212' },
+  { flag:'🇩🇿', name:'Algérie',         code:'+213' },
+  { flag:'🇹🇳', name:'Tunisie',         code:'+216' },
+  { flag:'🇪🇬', name:'Égypte',          code:'+20'  },
+  { flag:'🇫🇷', name:'France',          code:'+33'  },
+  { flag:'🇧🇪', name:'Belgique',        code:'+32'  },
+  { flag:'🇨🇭', name:'Suisse',          code:'+41'  },
+  { flag:'🇱🇺', name:'Luxembourg',      code:'+352' },
+  { flag:'🇬🇧', name:'Royaume-Uni',     code:'+44'  },
+  { flag:'🇩🇪', name:'Allemagne',       code:'+49'  },
+  { flag:'🇮🇹', name:'Italie',          code:'+39'  },
+  { flag:'🇪🇸', name:'Espagne',         code:'+34'  },
+  { flag:'🇵🇹', name:'Portugal',        code:'+351' },
+  { flag:'🇺🇸', name:'États-Unis',      code:'+1'   },
+  { flag:'🇨🇦', name:'Canada',          code:'+1'   },
+  { flag:'🇧🇷', name:'Brésil',          code:'+55'  },
+  { flag:'🇸🇦', name:'Arabie Saoudite', code:'+966' },
+  { flag:'🇦🇪', name:'Émirats arabes',  code:'+971' },
+  { flag:'🇨🇳', name:'Chine',           code:'+86'  },
+  { flag:'🇯🇵', name:'Japon',           code:'+81'  },
+];
+
+let selectedCountry = COUNTRIES[0]; // Sénégal par défaut
+
+function renderCountryList(filter = '') {
+  const list = document.getElementById('countryList');
+  const filtered = COUNTRIES.filter(c =>
+    c.name.toLowerCase().includes(filter.toLowerCase()) ||
+    c.code.includes(filter)
+  );
+  list.innerHTML = filtered.map(c => `
+    <div class="country-item" onclick="selectCountry('${c.code}','${c.flag}','${c.name}')">
+      <span class="flag">${c.flag}</span>
+      <span>${c.name}</span>
+      <span class="dial">${c.code}</span>
+    </div>
+  `).join('');
+}
+
+function selectCountry(code, flag, name) {
+  selectedCountry = { code, flag, name };
+  document.getElementById('selectedFlag').textContent = flag;
+  document.getElementById('selectedCode').textContent = code;
+  document.getElementById('telHint').textContent = `Numéro sans l'indicatif pays (${code})`;
+  document.getElementById('countryDropdown').classList.remove('open');
+  document.getElementById('telInput').focus();
+}
+
+function toggleDropdown() {
+  const dd = document.getElementById('countryDropdown');
+  dd.classList.toggle('open');
+  if (dd.classList.contains('open')) {
+    document.getElementById('countrySearch').value = '';
+    renderCountryList();
+    document.getElementById('countrySearch').focus();
+  }
+}
+
+function filterCountries(q) { renderCountryList(q); }
+
+// Fermer le dropdown en cliquant ailleurs
+document.addEventListener('click', e => {
+  const picker = document.getElementById('countryPicker');
+  const dd     = document.getElementById('countryDropdown');
+  if (!picker?.contains(e.target) && !dd?.contains(e.target)) {
+    dd?.classList.remove('open');
+  }
+});
+
+// Obtenir le numéro complet avec indicatif
+function getFullPhone() {
+  const num = document.getElementById('telInput').value.trim().replace(/[^0-9]/g, '');
+  if (!num) return '';
+  return selectedCountry.code + num;
+}
+
+// ════════════════════════════════════════════
+//  CRÉNEAUX JOUR / NUIT
+// ════════════════════════════════════════════
+const CRENEAUX_DEFAUT_JOUR = ['06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00'];
+const CRENEAUX_DEFAUT_NUIT = ['18:00','19:00','20:00','21:00','22:00','23:00','00:00','01:00'];
+
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#x27;');
+}
+function safeUrl(u) {
+  if (!u) return '';
+  return /^https?:\/\//i.test(u) ? u : '';
+}
+
+const R = {
+  activite: null,
+  prixBase: 0,
+  dateSelected: null,
+  heure: '',
+  periode: 'jour',        // 'jour' | 'nuit'
+  nb: 1,
+  optionsSelected: [],
+  optionsCout: 0,
+  total: 0,
+  prenom:'', nom:'', email:'', tel:'', noteClient:'',
+  paiement: 'wave',
+  token: null,
+  step: 1,
+  unavailableDates: [],
+  resaId: null,
+};
+
+function selectPeriode(p) {
+  R.periode = p;
+  R.heure   = '';
+  document.getElementById('recapHeure').textContent   = '—';
+  document.getElementById('recapPeriode').textContent = p === 'jour' ? '☀ Journée' : '🌙 Soirée / Nuit';
+
+  // Boutons
+  const btnJour = document.getElementById('btnJour');
+  const btnNuit = document.getElementById('btnNuit');
+  btnJour.classList.toggle('active', p === 'jour');
+  btnNuit.classList.toggle('active', p === 'nuit');
+
+  // Recharger les créneaux
+  renderCreneaux();
+}
+
+function renderCreneaux() {
+  const activite = R.activite;
+  if (!activite) return;
+
+  // Récupérer les bons créneaux selon la période
+  let creneaux;
+  if (R.periode === 'jour') {
+    creneaux = activite.creneaux_jour?.length ? activite.creneaux_jour : CRENEAUX_DEFAUT_JOUR;
+  } else {
+    creneaux = activite.creneaux_nuit?.length ? activite.creneaux_nuit : CRENEAUX_DEFAUT_NUIT;
+  }
+
+  // Mettre à jour le select classique (fallback)
+  const sel = document.getElementById('heureSelect');
+  sel.innerHTML = '<option value="">Choisir un horaire</option>' +
+    creneaux.map(h => `<option value="${h}">${h}</option>`).join('');
+
+  // Afficher la grille de créneaux
+  const grid = document.getElementById('creneauxGrid');
+  grid.innerHTML = creneaux.map(h => `
+    <button type="button"
+            class="creneau-btn ${h === R.heure ? 'selected ' + R.periode : ''}"
+            onclick="selectCreneau('${h}')"
+            aria-label="${h}"
+            aria-pressed="${h === R.heure}">
+      ${h}
+    </button>
+  `).join('');
+
+  document.getElementById('creneauxContainer').style.display = '';
+  document.getElementById('heureClassiqueContainer').style.display = 'none';
+}
+
+function selectCreneau(h) {
+  R.heure = h;
+  document.getElementById('recapHeure').textContent = h;
+  // Mettre à jour l'affichage des boutons
+  document.querySelectorAll('.creneau-btn').forEach(btn => {
+    const selected = btn.textContent.trim() === h;
+    btn.classList.toggle('selected', selected);
+    btn.classList.toggle(R.periode, selected);
+    btn.setAttribute('aria-pressed', selected);
+  });
+  // Sync select classique
+  document.getElementById('heureSelect').value = h;
+  updateRecap();
+}
+
+// ════════════════════════════════════════════
+//  CALENDRIER
+// ════════════════════════════════════════════
+const MOIS  = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const JOURS = ['L','M','M','J','V','S','D'];
+let calDate = new Date();
+
+function renderCal() {
+  const now  = new Date();
+  const y    = calDate.getFullYear();
+  const m    = calDate.getMonth();
+  const first = new Date(y, m, 1);
+  const last  = new Date(y, m+1, 0);
+  const startDow = (first.getDay() + 6) % 7;
+
+  document.getElementById('calTitle').textContent = `${MOIS[m]} ${y}`;
+
+  let html = JOURS.map(j => `<div class="cal-day-name">${j}</div>`).join('');
+  for (let i = 0; i < startDow; i++) html += `<div class="cal-day empty"></div>`;
+
+  for (let d = 1; d <= last.getDate(); d++) {
+    const thisDate = new Date(y, m, d);
+    const dateStr  = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isPast   = thisDate < new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const isUnavail= R.unavailableDates.includes(dateStr);
+    const isToday  = d===now.getDate() && m===now.getMonth() && y===now.getFullYear();
+    const isSel    = R.dateSelected === dateStr;
+
+    let cls = 'cal-day';
+    if (isPast || isUnavail) cls += ' disabled';
+    else if (isSel)          cls += ' selected';
+    else if (isToday)        cls += ' today';
+
+    const inter = (!isPast && !isUnavail)
+      ? `onclick="selectDate('${dateStr}')" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')selectDate('${dateStr}')"`
+      : '';
+
+    html += `<div class="${cls}" ${inter} aria-label="${d} ${MOIS[m]}">${d}</div>`;
+  }
+  document.getElementById('calGrid').innerHTML = html;
+}
+
+function selectDate(d) {
+  R.dateSelected = d;
+  const [y,mo,da] = d.split('-');
+  const f = new Date(y, mo-1, da).toLocaleDateString('fr-FR',
+    { weekday:'long', day:'numeric', month:'long' });
+  document.getElementById('recapDate').textContent = f;
+  renderCal();
+  // Re-render les créneaux (en cas de dates indisponibles spécifiques)
+  renderCreneaux();
+  updateRecap();
+}
+
+document.getElementById('calPrev').addEventListener('click', () => { calDate.setMonth(calDate.getMonth()-1); renderCal(); });
+document.getElementById('calNext').addEventListener('click', () => { calDate.setMonth(calDate.getMonth()+1); renderCal(); });
+
+// Select classique (fallback)
+document.getElementById('heureSelect').addEventListener('change', e => {
+  selectCreneau(e.target.value);
+});
+
+function changeNb(delta) {
+  const max = R.activite?.capacite || 20;
+  R.nb = Math.max(1, Math.min(max, R.nb + delta));
+  document.getElementById('nbDisplay').textContent = R.nb;
+  document.getElementById('recapNb').textContent = `${R.nb} personne${R.nb > 1 ? 's' : ''}`;
+  updateRecap();
+}
+
+// ════════════════════════════════════════════
+//  OPTIONS
+// ════════════════════════════════════════════
+function renderOptions(activite) {
+  const c    = document.getElementById('optionsContainer');
+  const opts = Array.isArray(activite.options) ? activite.options : [];
+  if (!opts.length) { c.innerHTML = ''; return; }
+  c.innerHTML = `
+    <p style="font-size:12px;font-weight:500;color:var(--ink-3);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">Options</p>
+    ${opts.map((opt,i) => `
+      <label class="option-item" for="rOpt${i}" style="margin-bottom:8px">
+        <input type="checkbox" id="rOpt${i}" value="${opt.prix||0}"
+               data-label="${opt.label||''}" onchange="updateOptions()">
+        <span>${opt.label||''}</span>
+        <span class="option-price">+${(opt.prix||0).toLocaleString('fr-FR')} FCFA</span>
+      </label>
+    `).join('')}
+  `;
+}
+
+function updateOptions() {
+  R.optionsSelected = [];
+  R.optionsCout = 0;
+  document.querySelectorAll('#optionsContainer input:checked').forEach(c => {
+    R.optionsSelected.push(c.dataset.label);
+    R.optionsCout += parseInt(c.value);
+  });
+  updateRecap();
+}
+
+// ════════════════════════════════════════════
+//  CALCUL PRIX
+// ════════════════════════════════════════════
+function updateRecap() {
+  if (!R.prixBase) return;
+  const base  = R.prixBase * R.nb;
+  R.total     = base + R.optionsCout;
+
+  document.getElementById('rLineBase').textContent    = `${R.nb} × ${R.prixBase.toLocaleString('fr-FR')} FCFA`;
+  document.getElementById('rLineBaseVal').textContent = `${base.toLocaleString('fr-FR')} FCFA`;
+  const lo = document.getElementById('rLineOpts');
+  lo.style.display = R.optionsCout > 0 ? 'flex' : 'none';
+  document.getElementById('rLineOptsVal').textContent = `${R.optionsCout.toLocaleString('fr-FR')} FCFA`;
+  document.getElementById('rTotal').textContent       = `${R.total.toLocaleString('fr-FR')} FCFA`;
+  document.getElementById('waveTotal').textContent    = `${R.total.toLocaleString('fr-FR')} FCFA`;
+  document.getElementById('orangeTotal').textContent  = `${R.total.toLocaleString('fr-FR')} FCFA`;
+}
+
+// ════════════════════════════════════════════
+//  NAVIGATION ÉTAPES
+// ════════════════════════════════════════════
+function goToStep(n) {
+  if (n === 2 && R.step === 1) {
+    if (!R.dateSelected)  { showToast('Choisissez une date', 'error'); return; }
+    if (!R.heure)         { showToast('Choisissez un horaire', 'error'); return; }
+  }
+
+  if (n === 3 && R.step === 2) {
+    R.prenom     = document.getElementById('prenomInput').value.trim().replace(/[<>"']/g,'').slice(0,50);
+    R.nom        = document.getElementById('nomInput').value.trim().replace(/[<>"']/g,'').slice(0,50);
+    R.email      = document.getElementById('emailInput').value.trim();
+    const telNum = document.getElementById('telInput').value.trim().replace(/[^0-9]/g,'');
+    R.tel        = getFullPhone();
+    R.noteClient = document.getElementById('noteClient').value.trim().replace(/[<>"']/g,'').slice(0,300);
+
+    if (!R.prenom || !R.nom)                          { showToast('Prénom et nom requis', 'error'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(R.email)) { showToast('Email invalide', 'error'); return; }
+    if (!telNum || telNum.length < 6)                  { showToast('Numéro de téléphone invalide', 'error'); return; }
+
+    document.getElementById('payRecap').innerHTML = [
+      ['Activité',   esc(R.activite?.nom || '—')],
+      ['Période',    R.periode === 'jour' ? 'Journée' : 'Soirée / Nuit'],
+      ['Date',       `${R.dateSelected} à ${R.heure}`],
+      ['Personnes',  `${R.nb}`],
+      ['Client',     `${esc(R.prenom)} ${esc(R.nom)}`],
+      ['Téléphone',  R.tel],
+      ['Total',      `<strong>${R.total.toLocaleString('fr-FR')} FCFA</strong>`],
+    ].map(([k,v]) => `
+      <div style="display:flex;justify-content:space-between">
+        <span style="color:var(--ink-3)">${k}</span>
+        <span>${v}</span>
+      </div>
+    `).join('');
+  }
+
+  for (let i = 1; i <= 4; i++) {
+    document.getElementById(`panelStep${i}`).style.display = i === n ? '' : 'none';
+    const s = document.getElementById(`step${i}`);
+    s.classList.remove('active','done');
+    if (i < n) s.classList.add('done');
+    if (i === n) s.classList.add('active');
+  }
+  R.step = n;
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+// ════════════════════════════════════════════
+//  MÉTHODE DE PAIEMENT
+// ════════════════════════════════════════════
+function selectPayment(method) {
+  R.paiement = method;
+  ['wave','orange','carte','especes'].forEach(m => {
+    const key  = m.charAt(0).toUpperCase() + m.slice(1);
+    document.getElementById(`pm${key}`).classList.toggle('selected', m === method);
+    document.getElementById(`pm${key}`).setAttribute('aria-checked', m === method);
+    document.getElementById(`instr${key}`).style.display = m === method ? '' : 'none';
+  });
+}
+['wave','orange','carte','especes'].forEach(m => {
+  document.getElementById(`pm${m.charAt(0).toUpperCase()+m.slice(1)}`)
+    ?.addEventListener('keydown', e => {
+      if (e.key==='Enter' || e.key===' ') selectPayment(m);
+    });
+});
+
+function showToast(msg, type='info') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.textContent = msg;
+  t.setAttribute('role','alert');
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 5000);
+}
+
+// ════════════════════════════════════════════
+//  SAUVEGARDE RÉSERVATION
+// ════════════════════════════════════════════
+async function sauvegarderReservation() {
+  const arr = new Uint8Array(16);
+  crypto.getRandomValues(arr);
+  R.token = Array.from(arr, b => b.toString(16).padStart(2,'0')).join('');
+
+  const payload = {
+    activite_id:      R.activite.id,
+    date:             R.dateSelected,
+    heure:            R.heure,
+    nb_personnes:     R.nb,
+    options:          R.optionsSelected,
+    montant_total:    R.total,
+    methode_paiement: R.paiement === 'carte' ? 'carte' : R.paiement,
+    note_client:      R.noteClient || null,
+    qr_token:         R.token,
+  };
+
+  const { Reservations, Auth } = window.DakarApp;
+  const user = await Auth.getUser();
+  if (!user) {
+    throw new Error('Vous devez être connecté pour finaliser une réservation.');
+  }
+  if (!R.activite?.id) {
+    throw new Error('Activité introuvable. Rechargez la page et réessayez.');
+  }
+  const resa = await Reservations.creer(payload);
+  R.resaId = resa.id;
+  return resa;
+}
+
+// ════════════════════════════════════════════
+//  CONFIRMER ET PAYER
+// ════════════════════════════════════════════
+async function confirmerEtPayer() {
+  if (!document.getElementById('cgAccept').checked) {
+    document.getElementById('payError').textContent = "Veuillez accepter les conditions d'utilisation";
+    document.getElementById('payError').style.display = '';
+    return;
+  }
+  const btn = document.getElementById('btnConfirmer');
+  btn.disabled = true;
+  btn.innerHTML = `<i class="ti ti-loader-2" style="font-size:14px;animation:spin .7s linear infinite"></i> Traitement…`;
+  document.getElementById('payError').style.display = 'none';
+
+  try {
+    const resa = await sauvegarderReservation();
+
+    if (R.paiement === 'wave' || R.paiement === 'orange') {
+      const hasRealKeys = window.PAYMENT_CONFIG &&
+        !JSON.stringify(window.PAYMENT_CONFIG).includes('VOTRE_PROJECT_ID');
+      if (hasRealKeys && window.Paiement) {
+        sessionStorage.setItem('da_pending_resa', JSON.stringify({
+          token: R.token, resaId: R.resaId || resa.id,
+          nom: R.activite?.nom, date: R.dateSelected, heure: R.heure,
+          periode: R.periode, nb: R.nb, total: R.total,
+          paiement: R.paiement, prenom: R.prenom, nom_client: R.nom, tel: R.tel,
+        }));
+        await window.Paiement.lancer(R.paiement, {
+          montant: R.total, qr_token: R.token,
+          activite_nom: R.activite?.nom || '', telephone: R.tel,
+        });
+        return;
+      } else {
+        showToast('Réservation enregistrée — les instructions de paiement vous seront envoyées sur WhatsApp', 'info');
+        await new Promise(r => setTimeout(r, 800));
+        afficherConfirmation(resa);
+      }
+    } else {
+      afficherConfirmation(resa);
+    }
+  } catch(e) {
+    document.getElementById('payError').textContent = e.message || 'Erreur. Réessayez.';
+    document.getElementById('payError').style.display = '';
+    btn.disabled = false;
+    btn.innerHTML = `<i class="ti ti-lock" style="font-size:14px"></i> Confirmer et payer`;
+  }
+}
+
+function afficherConfirmation(resa, paiementStatut = null) {
+  goToStep(4);
+  genQR();
+  document.getElementById('refCodeVal').textContent = R.token.slice(0,8).toUpperCase();
+  const periodeLabel = R.periode === 'nuit' ? 'Soirée / Nuit' : 'Journée';
+  document.getElementById('confirmRecapText').innerHTML = [
+    ['Activité',   R.activite?.nom || '—'],
+    ['Période',    periodeLabel],
+    ['Date',       `${R.dateSelected} à ${R.heure}`],
+    ['Personnes',  `${R.nb}`],
+    ['Paiement',   R.paiement === 'especes' ? 'Sur place' : R.paiement],
+    ['Total',      `${R.total.toLocaleString('fr-FR')} FCFA`],
+  ].map(([k,v]) => `
+    <div style="display:flex;justify-content:space-between">
+      <span style="color:var(--ink-3)">${k}</span>
+      <span style="font-weight:500">${v}</span>
+    </div>
+  `).join('');
+
+  const statusEl = document.getElementById('paiementStatus');
+  if (paiementStatut === 'complete') {
+    statusEl.innerHTML = `<div style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:rgba(42,122,82,.1);border-radius:99px;font-size:13px;font-weight:600;color:var(--success)"><i class="ti ti-circle-check" style="font-size:15px"></i>Paiement confirmé</div>`;
+  } else if (R.paiement === 'especes') {
+    statusEl.innerHTML = `<div style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:rgba(184,146,42,.1);border-radius:99px;font-size:13px;font-weight:600;color:var(--gold)"><i class="ti ti-clock" style="font-size:15px"></i>Paiement sur place</div>`;
+  } else {
+    statusEl.innerHTML = `<div style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--paper-2);border-radius:99px;font-size:13px;color:var(--ink-3)"><i class="ti ti-clock" style="font-size:15px"></i>En attente de confirmation</div>`;
+  }
+  showToast('Réservation enregistrée !', 'success');
+}
+
+function genQR() {
+  document.getElementById('qrCanvas').innerHTML = '';
+  new QRCode(document.getElementById('qrCanvas'), {
+    text: JSON.stringify({
+      ref: R.token.slice(0,8).toUpperCase(),
+      activite: R.activite?.nom || '—',
+      date: R.dateSelected, heure: R.heure,
+      periode: R.periode, nb: R.nb, total: R.total,
+    }),
+    width:180, height:180,
+    colorDark:'#0D0D0D', colorLight:'#FFFFFF',
+    correctLevel: QRCode.CorrectLevel.H,
+  });
+}
+
+function notifWhatsApp() {
+  const { WHATSAPP_NUMBER } = window.DakarApp;
+  const periodeLabel = R.periode === 'nuit' ? 'Soirée/Nuit' : 'Journée';
+  const msg = encodeURIComponent(
+    `Nouvelle réservation — ${R.activite?.nom || ''}\n` +
+    `Période : ${periodeLabel}\n` +
+    `Date : ${R.dateSelected} à ${R.heure}\n` +
+    `Personnes : ${R.nb}\n` +
+    `Montant : ${R.total.toLocaleString('fr-FR')} FCFA\n` +
+    `Paiement : ${R.paiement}\n` +
+    `Ref : ${R.token.slice(0,8).toUpperCase()}\n` +
+    `Client : ${R.prenom} ${R.nom} — ${R.tel}`
+  );
+  window.open(`https://wa.me/${779913729}?text=${msg}`, '_blank', 'noopener,noreferrer');
+}
+
+// ════════════════════════════════════════════
+//  RETOUR DEPUIS PAIEMENT
+// ════════════════════════════════════════════
+async function checkRetourPaiement() {
+  const params  = new URLSearchParams(window.location.search);
+  if (!params.get('paiement')) return false;
+  let pending = null;
+  try { pending = JSON.parse(sessionStorage.getItem('da_pending_resa') || 'null'); } catch(e) { pending = null; }
+  if (!pending) return false;
+
+  R.token = pending.token; R.resaId = pending.resaId;
+  R.dateSelected = pending.date; R.heure = pending.heure;
+  R.periode = pending.periode || 'jour';
+  R.nb = pending.nb; R.total = pending.total; R.paiement = pending.paiement;
+  R.prenom = pending.prenom; R.nom = pending.nom_client; R.tel = pending.tel;
+  R.activite = { id: null, nom: pending.nom };
+
+  let paiementStatut = 'pending';
+  try {
+    if (window.Paiement) {
+      const result = await window.Paiement.verifierRetour();
+      if (result) paiementStatut = result.statut;
+    }
+  } catch(e) {}
+
+  sessionStorage.removeItem('da_pending_resa');
+  if (window.Paiement) window.Paiement.nettoyerSession();
+  window.history.replaceState({}, '', window.location.pathname);
+  afficherConfirmation(null, paiementStatut);
+  return true;
+}
+
+// ════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════
+async function init() {
+  // Init liste des pays
+  renderCountryList();
+
+  // Retour de paiement ?
+  const estRetour = await checkRetourPaiement();
+  if (estRetour) return;
+
+  const params = new URLSearchParams(window.location.search);
+  const id     = parseInt(params.get('id'), 10);
+  if (!id || !Number.isFinite(id)) { window.location.href='index.html'; return; }
+
+  // Auth navbar
+  try {
+    const { Auth } = window.DakarApp;
+    const user = await Auth.getUser();
+    if (user) {
+      const init = (user.user_metadata?.prenom || user.email || 'U')[0].toUpperCase();
+      document.getElementById('navUserArea').innerHTML =
+        `<a href="espace-utilisateur.html"><div class="nav-avatar">${init}</div></a>`;
+      document.getElementById('prenomInput').value = user.user_metadata?.prenom || '';
+      document.getElementById('nomInput').value    = user.user_metadata?.nom    || '';
+      document.getElementById('emailInput').value  = user.email || '';
+    }
+  } catch(e) {}
+
+  // Charger l'activité
+  let activite = null;
+  try {
+    const { Activites } = window.DakarApp;
+    activite = await Activites.getById(id);
+    R.unavailableDates = (activite.disponibilites || []).filter(d=>!d.disponible).map(d=>d.date);
+  } catch(e) {
+    activite = {
+      id, nom:'Activité', categorie:'kayak', zone:'Dakar',
+      prix:15000, promo:null, capacite:8, options:[],
+      periode:'jour_et_nuit',
+      creneaux_jour:CRENEAUX_DEFAUT_JOUR,
+      creneaux_nuit:CRENEAUX_DEFAUT_NUIT,
+      image_principale:'images/hero.jpg',
+    };
+  }
+
+  R.activite = activite;
+  const prixAff = activite.promo ? Math.round(activite.prix*(1-activite.promo/100)) : activite.prix;
+  R.prixBase = prixAff;
+
+  // Afficher le sélecteur jour/nuit selon la période de l'activité
+  const periodeContainer = document.getElementById('periodeContainer');
+  if (activite.periode === 'jour_et_nuit') {
+    periodeContainer.style.display = '';   // Montre les deux boutons
+  } else if (activite.periode === 'nuit') {
+    periodeContainer.style.display = 'none';
+    selectPeriode('nuit');
+  } else {
+    periodeContainer.style.display = 'none';
+    selectPeriode('jour');
+  }
+
+  // Récap droite
+  document.getElementById('recapActivite').innerHTML = `
+    <img src="${safeUrl(activite.image_principale)}" alt="${esc(activite.nom)}"
+         style="width:60px;height:60px;border-radius:var(--r-sm);object-fit:cover;flex-shrink:0" loading="lazy">
+    <div>
+      <div style="font-weight:500;font-size:14px;margin-bottom:3px">${esc(activite.nom)}</div>
+      <div style="font-size:12px;color:var(--ink-3)">
+        <i class="ti ti-map-pin" style="font-size:11px"></i> ${esc(activite.zone)}
+      </div>
+      <div style="font-size:13px;font-weight:600;margin-top:3px">${prixAff.toLocaleString('fr-FR')} FCFA/pers.</div>
+    </div>
+  `;
+
+  // Pré-remplir période depuis URL
+  const periodeUrl = params.get('periode');
+  if (periodeUrl === 'nuit' || periodeUrl === 'jour') { selectPeriode(periodeUrl); }
+
+  // Pré-remplir date/heure depuis URL
+  const dateUrl  = params.get('date');
+  const heureUrl = params.get('heure');
+  const nbUrl    = parseInt(params.get('nb'), 10);
+  if (dateUrl)   selectDate(dateUrl);
+  if (heureUrl)  selectCreneau(heureUrl);
+  if (nbUrl > 0) { R.nb = nbUrl; document.getElementById('nbDisplay').textContent = nbUrl; document.getElementById('recapNb').textContent = `${nbUrl} personne${nbUrl>1?'s':''}`; }
+
+  renderOptions(activite);
+  renderCreneaux();
+  renderCal();
+  updateRecap();
+
+  // Période recap initiale
+  document.getElementById('recapPeriode').textContent = R.periode === 'nuit' ? '🌙 Soirée / Nuit' : '☀ Journée';
+}
+
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20);
+});
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
