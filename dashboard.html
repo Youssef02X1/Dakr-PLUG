@@ -79,6 +79,11 @@
             <i class="ti ti-chart-bar" style="font-size:15px"></i> Revenus
           </a>
         </li>
+        <li>
+          <a href="#" class="dash-link" data-section="analytics" onclick="showSection('analytics',this);return false">
+            <i class="ti ti-chart-line" style="font-size:15px"></i> Analytics
+          </a>
+        </li>
       </ul>
     </nav>
 
@@ -470,6 +475,36 @@
       </div>
     </section>
 
+    <!-- ─── ANALYTICS ─── -->
+    <section id="sectionAnalytics" class="dash-section" style="display:none">
+      <div class="dash-header">
+        <h1 style="font-family:var(--font-display);font-size:1.8rem;font-weight:300;letter-spacing:-.02em">Analytics</h1>
+      </div>
+      <div class="stats-grid" style="margin-bottom:28px">
+        <div class="stat-card stat-ocean"><div class="stat-label">Vues aujourd'hui</div><div class="stat-value" id="anaAujourdhui">—</div></div>
+        <div class="stat-card stat-success"><div class="stat-label">Vues (7 jours)</div><div class="stat-value" id="ana7j">—</div></div>
+        <div class="stat-card stat-coral"><div class="stat-label">Visiteurs uniques (7j)</div><div class="stat-value" id="anaVisiteurs">—</div></div>
+      </div>
+      <div class="dash-panel" style="margin-bottom:20px">
+        <h2 class="dash-panel-title">Pages les plus vues (7 jours)</h2>
+        <div style="overflow-x:auto">
+          <table class="dash-table">
+            <thead><tr><th>Page</th><th>Vues</th></tr></thead>
+            <tbody id="tbAnaPages"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="dash-panel">
+        <h2 class="dash-panel-title">Vues par jour (7 derniers jours)</h2>
+        <div style="overflow-x:auto">
+          <table class="dash-table">
+            <thead><tr><th>Jour</th><th>Vues</th></tr></thead>
+            <tbody id="tbAnaJours"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
   </main>
 </div>
 
@@ -531,13 +566,19 @@
 <script src="notifications.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
+<script src="analytics.js"></script>
 <script>
 // SÉCURITÉ — Anti-XSS
 function esc(s) {
   if (s === null || s === undefined) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');
 }
-function safeUrl(u) { return (u && /^https?:\/\//i.test(u)) ? u : ''; }
+function safeUrl(u) {
+  if (!u) return '';
+  if (/^https?:\/\//i.test(u)) return u;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(u) || u.startsWith('//')) return '';
+  return u;
+}
 
 let _resas = [];
 let _acts  = [];
@@ -579,7 +620,7 @@ function showSection(name, linkEl) {
   toggleDashSidebar(false);
   const sectionMap = {
     overview:'Overview', reservations:'Reservations', annonces:'Annonces',
-    nouvelle:'Nouvelle', avis:'Avis', revenus:'Revenus'
+    nouvelle:'Nouvelle', avis:'Avis', revenus:'Revenus', analytics:'Analytics'
   };
   const el = document.getElementById(`section${sectionMap[name]}`);
   if (el) el.style.display = '';
@@ -594,6 +635,7 @@ function showSection(name, linkEl) {
   if (name==='annonces')     renderAnnonces();
   if (name==='avis')         renderAvis();
   if (name==='revenus')      renderRevenus();
+  if (name==='analytics')    renderAnalytics();
   if (name==='nouvelle')     resetForm();
 }
 
@@ -1091,6 +1133,60 @@ function renderRevenus() {
       <td><strong style="color:var(--success)">${d.total.toLocaleString('fr-FR')} FCFA</strong></td>
     </tr>
   `).join('');
+}
+
+async function renderAnalytics() {
+  try {
+    const { sb } = window.DakarApp;
+    const debut7j = new Date(Date.now() - 7*24*60*60*1000).toISOString();
+    const debutJour = new Date(); debutJour.setHours(0,0,0,0);
+
+    const { data: vues7j, error } = await sb
+      .from('page_views')
+      .select('path, session_id, created_at')
+      .gte('created_at', debut7j);
+    if (error) throw error;
+
+    const list = vues7j || [];
+    const aujourdhui = list.filter(v => new Date(v.created_at) >= debutJour).length;
+    const visiteurs  = new Set(list.map(v => v.session_id)).size;
+
+    document.getElementById('anaAujourdhui').textContent = aujourdhui;
+    document.getElementById('ana7j').textContent          = list.length;
+    document.getElementById('anaVisiteurs').textContent   = visiteurs;
+
+    // Top pages
+    const parPage = {};
+    list.forEach(v => { parPage[v.path] = (parPage[v.path]||0) + 1; });
+    const topPages = Object.entries(parPage).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    document.getElementById('tbAnaPages').innerHTML = topPages.length
+      ? topPages.map(([path,n]) => `
+          <tr><td style="font-size:13px">${esc(path)}</td><td>${n}</td></tr>
+        `).join('')
+      : `<tr><td colspan="2" style="text-align:center;color:var(--ink-3);padding:24px">Aucune vue enregistrée pour l'instant</td></tr>`;
+
+    // Vues par jour (7 derniers jours, dans l'ordre chronologique)
+    const parJour = {};
+    list.forEach(v => {
+      const j = v.created_at.slice(0,10); // YYYY-MM-DD
+      parJour[j] = (parJour[j]||0) + 1;
+    });
+    const jours = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate()-i);
+      jours.push(d.toISOString().slice(0,10));
+    }
+    document.getElementById('tbAnaJours').innerHTML = jours.map(j => `
+      <tr>
+        <td style="font-size:13px">${new Date(j+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'})}</td>
+        <td>${parJour[j] || 0}</td>
+      </tr>
+    `).join('');
+
+  } catch (e) {
+    console.error('Erreur chargement analytics :', e);
+    showToast(`Analytics : ${e.message || e.code || 'erreur inconnue'}`, 'error');
+  }
 }
 
 // ─────────────────────────────

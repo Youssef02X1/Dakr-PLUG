@@ -238,6 +238,7 @@
 <script src="notifications.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
+<script src="analytics.js"></script>
 <script>
 let currentUser = null;
 
@@ -249,7 +250,9 @@ function esc(s) {
 }
 function safeUrl(u) {
   if (!u) return '';
-  return /^https?:\/\//i.test(u) ? u : '';
+  if (/^https?:\/\//i.test(u)) return u;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(u) || u.startsWith('//')) return '';
+  return u;
 }
 
 function showToast(msg, type='info') {

@@ -174,7 +174,7 @@ const Templates = {
         <tr>
           <td style="padding:20px 36px;text-align:center">
             <p style="font-size:11px;color:#B0B0B0;margin:0">
-              © 2025 ${SITE_NAME} · Dakar, Sénégal
+              © 2026 ${SITE_NAME} · Dakar, Sénégal
             </p>
           </td>
         </tr>

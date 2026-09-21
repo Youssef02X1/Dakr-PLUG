@@ -571,12 +571,13 @@
 <footer style="background:var(--ink);padding:24px 0;margin-top:60px">
   <div class="container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
     <a href="index.html" class="nav-logo" style="color:#fff"><span style="color:var(--accent)">Dakar</span>PLUG</a>
-    <span style="font-size:12px;color:rgba(255,255,255,.3)">© 2026 Dakar PLUG</span>
+    <span style="font-size:12px;color:rgba(255,255,255,.3)">© 2025 Dakar PLUG</span>
   </div>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
+<script src="analytics.js"></script>
 <script src="paiement.js"></script>
 <script>
 
@@ -683,7 +684,9 @@ function esc(s) {
 }
 function safeUrl(u) {
   if (!u) return '';
-  return /^https?:\/\//i.test(u) ? u : '';
+  if (/^https?:\/\//i.test(u)) return u;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(u) || u.startsWith('//')) return '';
+  return u;
 }
 
 const R = {
@@ -1013,10 +1016,8 @@ async function confirmerEtPayer() {
   try {
     const resa = await sauvegarderReservation();
 
-    if (R.paiement === 'wave' || R.paiement === 'orange') {
-      const hasRealKeys = window.PAYMENT_CONFIG &&
-        !JSON.stringify(window.PAYMENT_CONFIG).includes('VOTRE_PROJECT_ID');
-      if (hasRealKeys && window.Paiement) {
+    if (R.paiement === 'wave' || R.paiement === 'orange' || R.paiement === 'carte') {
+      if (window.Paiement) {
         sessionStorage.setItem('da_pending_resa', JSON.stringify({
           token: R.token, resaId: R.resaId || resa.id,
           nom: R.activite?.nom, date: R.dateSelected, heure: R.heure,
@@ -1024,8 +1025,7 @@ async function confirmerEtPayer() {
           paiement: R.paiement, prenom: R.prenom, nom_client: R.nom, tel: R.tel,
         }));
         await window.Paiement.lancer(R.paiement, {
-          montant: R.total, qr_token: R.token,
-          activite_nom: R.activite?.nom || '', telephone: R.tel,
+          id: R.resaId || resa.id, montant: R.total, qr_token: R.token,
         });
         return;
       } else {
@@ -1102,7 +1102,7 @@ function notifWhatsApp() {
     `Ref : ${R.token.slice(0,8).toUpperCase()}\n` +
     `Client : ${R.prenom} ${R.nom} — ${R.tel}`
   );
-  window.open(`https://wa.me/${779913729}?text=${msg}`, '_blank', 'noopener,noreferrer');
+  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank', 'noopener,noreferrer');
 }
 
 // ════════════════════════════════════════════
@@ -1173,14 +1173,9 @@ async function init() {
     activite = await Activites.getById(id);
     R.unavailableDates = (activite.disponibilites || []).filter(d=>!d.disponible).map(d=>d.date);
   } catch(e) {
-    activite = {
-      id, nom:'Activité', categorie:'kayak', zone:'Dakar',
-      prix:15000, promo:null, capacite:8, options:[],
-      periode:'jour_et_nuit',
-      creneaux_jour:CRENEAUX_DEFAUT_JOUR,
-      creneaux_nuit:CRENEAUX_DEFAUT_NUIT,
-      image_principale:'images/hero.jpg',
-    };
+    console.error('Erreur chargement activité (reservation.html) :', e);
+    window.location.href = '404.html';
+    return;
   }
 
   R.activite = activite;

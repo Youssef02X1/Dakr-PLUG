@@ -9,8 +9,6 @@ const SUPABASE_URL      = 'https://jjlkdogolzdaxsxfuxpi.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqbGtkb2dvbHpkYXhzeGZ1eHBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2MzIzMTEsImV4cCI6MjEwNDIwODMxMX0.ESAF47a3S9-7FrByEB7t2SuEHoXWFg-eAwuOCPL6rus';
 const ADMIN_EMAIL       = 'lefayoussef@gmail.com';         // votre email admin
 const WHATSAPP_NUMBER   = '221779913729';             // sans + ni espaces
-const WAVE_NUMBER       = '77 991 37 29';             // numéro Wave affiché au client
-const ORANGE_NUMBER     = '77 991 37 29';             // numéro Orange Money affiché
 const SITE_URL          = 'https://dakarplug.netlify.app'; // URL finale du site
 
 // ============================================
@@ -493,8 +491,8 @@ function redirectWhatsApp(reservation, activiteNom) {
 // EXPORT GLOBAL
 // ============================================
 window.DakarApp = {
-  sb,
-  ADMIN_EMAIL, WHATSAPP_NUMBER, WAVE_NUMBER, ORANGE_NUMBER, SITE_URL,
+  sb, SUPABASE_URL,
+  ADMIN_EMAIL, WHATSAPP_NUMBER, SITE_URL,
   Security, Auth, Activites, Reservations, Admin, Storage, Avis,
   redirectWhatsApp,
 };

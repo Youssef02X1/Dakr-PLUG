@@ -80,6 +80,9 @@
             <option value="yoff">Yoff</option>
             <option value="lac_rose">Lac Rose</option>
             <option value="saly">Saly</option>
+            <option value="mbour">Mbour</option>
+            <option value="petite_cote">Petite Côte</option>
+            <option value="casamance">Casamance</option>
           </select>
           <button type="submit" class="btn btn-accent btn-sm">Rechercher</button>
         </form>
@@ -102,7 +105,7 @@
 
       <div class="hero-image-side">
         <img src="images/hero.jpg"
-             alt="Plage de Dakar au coucher du soleil" loading="lazy">
+             alt="Plage de Dakar au coucher du soleil" fetchpriority="high">
         <div class="hero-image-caption">
           <div class="t-label">Plage des Almadies</div>
           <div class="val">Dakar, Sénégal</div>
@@ -117,7 +120,7 @@
   <div style="display:grid;grid-template-columns:1fr 340px;max-width:1200px;margin:0 auto">
     <div style="padding:52px 56px 52px 40px;border-right:1px solid rgba(255,255,255,.07)">
       <div style="font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:16px" id="eventLabel">
-        Événement · 15 — 18 Aout 2027
+        Événement · 14 — 16 Juin 2025
       </div>
       <h2 id="eventTitle" style="font-family:var(--font-display);font-size:clamp(1.6rem,3vw,2.4rem);font-weight:300;color:#fff;letter-spacing:-.02em;line-height:1.1;margin-bottom:14px">
         La nuit des expériences uniques
@@ -281,7 +284,7 @@
           <div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
                       color:rgba(196,154,60,.8);margin-bottom:4px">Localisation</div>
           <div style="font-size:14px;font-weight:500">Île de Mar Lodj</div>
-          <div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:2px">Delta du Sine-Saloum · 180 km de Dakar</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:2px">Delta du Saloum · 180 km de Dakar</div>
         </div>
       </div>
 
@@ -294,7 +297,7 @@
         </div>
         <h2 style="font-family:var(--font-display);font-size:clamp(2rem,3.5vw,3rem);font-weight:300;
                    letter-spacing:-.03em;line-height:1.1;color:#fff;margin-bottom:20px">
-          Le Delta du Sine-Saloum<br><em style="color:#C49A3C;font-style:italic">vous appelle</em>
+          Le Delta du Saloum<br><em style="color:#C49A3C;font-style:italic">vous appelle</em>
         </h2>
         <p style="font-size:15px;color:rgba(255,255,255,.55);line-height:1.8;margin-bottom:28px;max-width:440px">
           Bolongs, mangroves et villages de pêcheurs. Des excursions
@@ -308,7 +311,7 @@
                       background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
                       border-radius:10px">
             <i class="ti ti-sailboat" style="font-size:18px;color:#C49A3C;flex-shrink:0" aria-hidden="true"></i>
-            <span style="font-size:13px;color:rgba(255,255,255,.75)">Balade en pirogue dans les bolongs</span>
+            <span style="font-size:13px;color:rgba(255,255,255,.75)">Balade en pirogue</span>
           </div>
           <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;
                       background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
@@ -320,7 +323,7 @@
                       background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
                       border-radius:10px">
             <i class="ti ti-sun" style="font-size:18px;color:#C49A3C;flex-shrink:0" aria-hidden="true"></i>
-            <span style="font-size:13px;color:rgba(255,255,255,.75)">Pique-nique dans les bolongs</span>
+            <span style="font-size:13px;color:rgba(255,255,255,.75)">Pique-nique bolongs</span>
           </div>
           <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;
                       background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
@@ -343,7 +346,7 @@
             Découvrir les excursions
           </a>
           <div style="color:rgba(255,255,255,.45);font-size:13px">
-            Dès <strong style="color:#C49A3C">5 000 FCFA</strong> / pers.
+            Dès <strong style="color:#C49A3C">15 000 FCFA</strong> / pers.
           </div>
         </div>
       </div>
@@ -390,7 +393,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <span>© 2026 Dakar PLUG. Tous droits réservés.</span>
+      <span>© 2025 Dakar PLUG. Tous droits réservés.</span>
       <span>Conçu à Dakar, Sénégal</span>
     </div>
   </div>
@@ -401,6 +404,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="seo.js"></script>
 <script src="supabase-config.js"></script>
+<script src="analytics.js"></script>
 <script src="app.js"></script>
 <script>
 // ════════════════════════════════════════
@@ -415,7 +419,8 @@ function esc(s) {
 function safeUrl(u) {
   if (!u) return '';
   if (/^https?:\/\//i.test(u)) return u;
-  return ''; // rejeter javascript:, data:, etc.
+  if (/^[a-z][a-z0-9+.-]*:/i.test(u) || u.startsWith('//')) return '';
+  return u;
 }
 // ════════════════════════════════════════
 //  CATÉGORIES
@@ -660,19 +665,19 @@ function initMap(list) {
   }
   const ico = L.divIcon({
     className:'',
-    html:`<div style="width:10px;height:10px;background:#C85A3C;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 4px rgba(200,90,60,.2)"></div>`,
-    iconSize:[10,10], iconAnchor:[5,5], popupAnchor:[0,-10]
+    html:`<div style="width:13px;height:13px;background:var(--accent);border-radius:50%;border:2.5px solid #fff;box-shadow:0 0 0 4px rgba(200,90,60,.18)"></div>`,
+    iconSize:[13,13], iconAnchor:[6,6], popupAnchor:[0,-10]
   });
   list.filter(a=>a.lat&&a.lng).forEach(a => {
     const p = a.promo ? Math.round(a.prix*(1-a.promo/100)) : a.prix;
     L.marker([a.lat,a.lng],{icon:ico}).addTo(mapInst).bindPopup(`
-      <div style="font-family:'Inter',sans-serif;min-width:180px">
-        <img src="${safeUrl(a.image_principale)}" style="width:100%;height:88px;object-fit:cover;border-radius:6px;margin-bottom:8px" alt="${esc(a.nom)}">
-        <div style="font-weight:500;font-size:13px;color:#0D0D0D">${esc(a.nom)}</div>
-        <div style="font-size:12px;color:#7A7A7A;margin:2px 0">${esc(a.zone)}</div>
-        <strong style="color:#C85A3C;font-size:13px">${p.toLocaleString('fr-FR')} FCFA</strong><br>
-        <a href="activite.html?id=${a.id}" style="display:inline-block;margin-top:8px;font-size:12px;color:#1A6560;font-weight:500">
-          Voir et réserver
+      <div style="font-family:'Inter',sans-serif;min-width:190px">
+        <img src="${safeUrl(a.image_principale)}" style="width:100%;height:92px;object-fit:cover;border-radius:var(--r-sm);margin-bottom:10px" alt="${esc(a.nom)}">
+        <div style="font-weight:500;font-size:13px;color:var(--ink);line-height:1.3">${esc(a.nom)}</div>
+        <div style="font-size:12px;color:var(--ink-3);margin:3px 0 6px">${esc(a.zone)}</div>
+        <strong style="color:var(--accent);font-size:13px">${p.toLocaleString('fr-FR')} FCFA</strong><br>
+        <a href="activite.html?id=${a.id}" style="display:inline-block;margin-top:9px;font-size:12px;color:var(--teal);font-weight:500">
+          Voir et réserver →
         </a>
       </div>
     `);

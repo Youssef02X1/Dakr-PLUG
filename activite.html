@@ -19,7 +19,7 @@
     <ul class="nav-links">
       <li><a href="index.html">Accueil</a></li>
       <li><a href="index.html#activites">Activités</a></li>
-      <li><a href="saloum.html" style="color:var(--teal);font-weight:500">Delta du Sine-Saloum</a></li>
+      <li><a href="saloum.html" style="color:var(--teal);font-weight:500">Delta du Saloum</a></li>
       <li><a href="index.html#carte">Carte</a></li>
     </ul>
     <div class="nav-actions">
@@ -67,7 +67,7 @@
   <div class="container">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
       <a href="index.html" class="nav-logo" style="color:#fff"><span style="color:var(--accent)">Dakar</span>PLUG</a>
-      <span style="font-size:12px;color:rgba(255,255,255,.3)">© 2026 Dakar PLUG</span>
+      <span style="font-size:12px;color:rgba(255,255,255,.3)">© 2025 Dakar PLUG</span>
     </div>
   </div>
 </footer>
@@ -77,6 +77,7 @@
 <script src="seo.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
+<script src="analytics.js"></script>
 <script>
 // ============ HELPERS ============
 // CORRECTIF CRITIQUE : esc()/safeUrl() sont utilisés dans toute cette page mais
@@ -94,7 +95,8 @@ function esc(s) {
 function safeUrl(u) {
   if (!u) return '';
   if (/^https?:\/\//i.test(u)) return u;
-  return '';
+  if (/^[a-z][a-z0-9+.-]*:/i.test(u) || u.startsWith('//')) return ''; // javascript:, data:, //evil.com...
+  return u; // chemin relatif local (images/xxx.jpg) : autorisé
 }
 
 function showToast(msg, type='info') {
