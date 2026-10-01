@@ -18,7 +18,7 @@
     <ul class="nav-links">
       <li><a href="index.html">Accueil</a></li>
       <li><a href="index.html#activites">Activités</a></li>
-      <li><a href="saloum.html" style="color:var(--teal);font-weight:500">Delta du Saloum</a></li>
+      <li><a href="saloum.html" style="color:var(--teal);font-weight:500">Delta du Sine-Saloum</a></li>
     </ul>
     <div class="nav-actions">
       <div id="navUserArea"></div>
@@ -320,7 +320,8 @@ async function renderReservations() {
     const act = r.activites || {};
     const img = act.image_principale || r.image_principale || 'images/hero.jpg';
     const nom = act.nom || r.activite_nom || '—';
-    const dateF = r.date ? new Date(r.date+'T00:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}) : '—';
+    const fmtD = s => new Date(s+'T00:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+    const dateF = r.date ? (r.date_fin ? `du ${fmtD(r.date)} au ${fmtD(r.date_fin)}` : fmtD(r.date)) : '—';
     return `
       <div class="resa-item">
         <img src="${img}" alt="${nom}" class="resa-item-img" loading="lazy">

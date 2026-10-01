@@ -677,6 +677,11 @@ footer ul a:hover { color: rgba(255,255,255,.82); }
 }
 .cal-day:hover:not(.disabled):not(.empty) { background: var(--paper-2); }
 .cal-day.selected { background: var(--ink); color: var(--white); }
+.cal-day.in-range { background: var(--paper-2); border-radius: 0; }
+.date-fixe { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 1px solid var(--ink); border-radius: var(--r-sm); margin-bottom: 8px; }
+.date-fixe i { font-size: 22px; }
+.date-fixe span { display: block; font-size: 12px; color: var(--ink-3); }
+.date-fixe strong { font-weight: 500; font-size: 15px; }
 .cal-day.today { border-color: var(--ink-3); color: var(--ink); font-weight: 500; }
 .cal-day.disabled { opacity: .28; cursor: not-allowed; }
 .cal-day.empty { cursor: default; }
@@ -878,8 +883,7 @@ footer ul a:hover { color: rgba(255,255,255,.82); }
   .resa-panel { padding: 24px; }
 }
 
-/* ════════════════════════════════════════
-   FLUIDITÉ — clavier, mouvement, transitions de page,
+/* FLUIDITÉ — clavier, mouvement, transitions de page,
    micro-interactions qui répondent à une action de l'utilisateur
    ════════════════════════════════════════ */
 
@@ -894,7 +898,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   outline-offset: 1px;
 }
 
-/* Transition douce entre les pages — dégrade silencieusement si non supporté */
+/* Transition douce entre les pages - dégrade silencieusement si non supporté */
 @view-transition { navigation: auto; }
 
 /* Un changement d'étape, de créneau ou de méthode de paiement doit se sentir, pas juste s'afficher */

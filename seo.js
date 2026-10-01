@@ -1,10 +1,7 @@
-// ============================================
-// SEO.JS — Balises structurées + optimisations
+// SEO.JS - Balises structurées + optimisations
 // Dakar PLUG
-// ============================================
 // Injecte automatiquement les balises JSON-LD Schema.org
 // pour un meilleur référencement Google
-// ============================================
 
 const SEO = {
 
@@ -42,7 +39,7 @@ const SEO = {
   },
 
   /**
-   * Schema.org pour la page d'accueil — WebSite + SearchAction
+   * Schema.org pour la page d'accueil - WebSite + SearchAction
    */
   injectHomepage(siteUrl) {
     this._inject({
@@ -80,7 +77,7 @@ const SEO = {
   },
 
   /**
-   * Schema.org pour une fiche activité — TouristAttraction + Offer
+   * Schema.org pour une fiche activité - TouristAttraction + Offer
    */
   injectActivite(activite, siteUrl) {
     const prixAff = activite.promo
@@ -133,7 +130,7 @@ const SEO = {
   },
 
   /**
-   * Schema.org pour la page de réservation — ReservationPackage
+   * Schema.org pour la page de réservation - ReservationPackage
    */
   injectReservation(activite, siteUrl) {
     this._inject({
@@ -174,9 +171,7 @@ const SEO = {
   },
 };
 
-// ════════════════════════════════════════════
-//  SITEMAP.XML — à créer à la racine du site
-// ════════════════════════════════════════════
+//  SITEMAP.XML - à créer à la racine du site
 // Copiez ce contenu dans un fichier sitemap.xml
 // et remplacez VOTRE_DOMAINE par votre vrai domaine
 //
@@ -199,9 +194,7 @@ const SEO = {
 //   </url>
 // </urlset>
 
-// ════════════════════════════════════════════
-//  ROBOTS.TXT — à créer à la racine du site
-// ════════════════════════════════════════════
+//  ROBOTS.TXT - à créer à la racine du site
 // User-agent: *
 // Allow: /
 // Disallow: /dashboard.html

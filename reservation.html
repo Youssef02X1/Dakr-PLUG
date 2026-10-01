@@ -202,7 +202,7 @@
 
     <div class="resa-layout">
 
-      <!-- ════ GAUCHE ════ -->
+      <!-- Gauche -->
       <div>
 
         <!-- STEP 1 -->
@@ -225,7 +225,12 @@
           </div>
 
           <!-- CALENDRIER -->
-          <div class="cal-wrapper" role="region" aria-label="Calendrier">
+          <div id="dateFixe" class="date-fixe" style="display:none" role="status">
+            <i class="ti ti-checkbox" aria-hidden="true"></i>
+            <div><span>Date de l'événement</span><strong id="dateFixeTxt"></strong></div>
+          </div>
+          <p id="calAide" style="display:none;font-size:13px;color:var(--ink-3);margin-bottom:10px" aria-live="polite"></p>
+          <div class="cal-wrapper" id="calWrapper" role="region" aria-label="Calendrier">
             <div class="cal-header">
               <button class="cal-nav" id="calPrev" aria-label="Mois précédent">
                 <i class="ti ti-chevron-left" style="font-size:13px"></i>
@@ -375,12 +380,7 @@
             <div class="pay-method" id="pmCarte"
                  onclick="selectPayment('carte')" role="radio" tabindex="0" aria-checked="false">
               <div class="pm-logo"><i class="ti ti-credit-card" style="font-size:18px;color:var(--ink-3)"></i></div>
-              <div class="pm-name">Carte</div>
-            </div>
-            <div class="pay-method" id="pmEspeces"
-                 onclick="selectPayment('especes')" role="radio" tabindex="0" aria-checked="false">
-              <div class="pm-logo"><i class="ti ti-cash" style="font-size:18px;color:var(--ink-3)"></i></div>
-              <div class="pm-name">Sur place</div>
+              <div class="pm-name">Carte bancaire</div>
             </div>
           </div>
 
@@ -415,33 +415,16 @@
             </div>
           </div>
 
-          <!-- INFO CARTE BANCAIRE -->
           <div id="instrCarte"
                style="background:var(--paper-2);border:1px solid var(--line);border-radius:var(--r-md);padding:18px;margin-bottom:20px;display:none">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
               <i class="ti ti-credit-card" style="font-size:16px;color:var(--ink-2)"></i>
-              <h3 style="font-size:13px;font-weight:600;color:var(--ink-2)">Carte bancaire internationale</h3>
+              <h3 style="font-size:13px;font-weight:600;color:var(--ink-2)">Paiement par carte bancaire</h3>
             </div>
             <p style="font-size:13px;color:var(--ink-2);line-height:1.7">
-              Visa, Mastercard, American Express acceptées.<br>
-              Idéal pour les clients internationaux (Europe, USA, Maroc, etc.)
+              Visa et Mastercard acceptées. Vous serez redirigé vers la page de paiement sécurisée pour saisir votre carte.
             </p>
-            <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png" alt="Visa" style="height:20px;object-fit:contain">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png" alt="Mastercard" style="height:20px;object-fit:contain">
-            </div>
-          </div>
-
-          <!-- INFO ESPÈCES -->
-          <div id="instrEspeces"
-               style="background:var(--paper-2);border:1px solid var(--line);border-radius:var(--r-md);padding:18px;margin-bottom:20px;display:none">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-              <i class="ti ti-info-circle" style="font-size:16px;color:var(--ink-3)"></i>
-              <h3 style="font-size:13px;font-weight:600;color:var(--ink-2)">Paiement sur place</h3>
-            </div>
-            <p style="font-size:13px;color:var(--ink-2);line-height:1.7">
-              Réservation provisoire confirmée à votre arrivée. Présentez votre QR code.
-            </p>
+            <p style="margin-top:12px;font-size:13px;font-weight:600;color:var(--ink)">Total : <span id="carteTotal"></span></p>
           </div>
 
           <!-- RÉCAP -->
@@ -506,7 +489,7 @@
 
       </div>
 
-      <!-- ════ DROITE : RÉCAP ════ -->
+      <!-- Droite : récap -->
       <div>
         <div style="background:var(--white);border-radius:var(--r-xl);padding:24px;border:1px solid var(--line);position:sticky;top:calc(var(--nav-h) + 20px)">
           <h3 style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:18px">Votre réservation</h3>
@@ -551,6 +534,10 @@
               <span>Options</span>
               <span id="rLineOptsVal">—</span>
             </div>
+            <div style="display:flex;justify-content:space-between;color:var(--ink-3)">
+              <span>Frais de service</span>
+              <span id="rLineFeeVal">—</span>
+            </div>
             <div style="display:flex;justify-content:space-between;font-weight:600;font-size:15px;border-top:1px solid var(--line);padding-top:12px;margin-top:4px">
               <span>Total</span>
               <span id="rTotal">—</span>
@@ -581,9 +568,7 @@
 <script src="paiement.js"></script>
 <script>
 
-// ════════════════════════════════════════════
 //  PAYS ET INDICATIFS TÉLÉPHONIQUES
-// ════════════════════════════════════════════
 const COUNTRIES = [
   { flag:'🇸🇳', name:'Sénégal',         code:'+221' },
   { flag:'🇲🇱', name:'Mali',            code:'+223' },
@@ -670,9 +655,7 @@ function getFullPhone() {
   return selectedCountry.code + num;
 }
 
-// ════════════════════════════════════════════
 //  CRÉNEAUX JOUR / NUIT
-// ════════════════════════════════════════════
 const CRENEAUX_DEFAUT_JOUR = ['06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00'];
 const CRENEAUX_DEFAUT_NUIT = ['18:00','19:00','20:00','21:00','22:00','23:00','00:00','01:00'];
 
@@ -693,6 +676,8 @@ const R = {
   activite: null,
   prixBase: 0,
   dateSelected: null,
+  dateFin: null,
+  mode: 'single',      // 'single' | 'range' (location) | 'fixed' (événement)
   heure: '',
   periode: 'jour',        // 'jour' | 'nuit'
   nb: 1,
@@ -711,7 +696,7 @@ function selectPeriode(p) {
   R.periode = p;
   R.heure   = '';
   document.getElementById('recapHeure').textContent   = '—';
-  document.getElementById('recapPeriode').textContent = p === 'jour' ? '☀ Journée' : '🌙 Soirée / Nuit';
+  document.getElementById('recapPeriode').textContent = p === 'jour' ? 'Journée' : 'Soirée / Nuit';
 
   // Boutons
   const btnJour = document.getElementById('btnJour');
@@ -771,9 +756,7 @@ function selectCreneau(h) {
   updateRecap();
 }
 
-// ════════════════════════════════════════════
 //  CALENDRIER
-// ════════════════════════════════════════════
 const MOIS  = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 const JOURS = ['L','M','M','J','V','S','D'];
 let calDate = new Date();
@@ -797,11 +780,13 @@ function renderCal() {
     const isPast   = thisDate < new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const isUnavail= R.unavailableDates.includes(dateStr);
     const isToday  = d===now.getDate() && m===now.getMonth() && y===now.getFullYear();
-    const isSel    = R.dateSelected === dateStr;
+    const isSel    = R.dateSelected === dateStr || R.dateFin === dateStr;
+    const inRange  = R.dateFin && dateStr > R.dateSelected && dateStr < R.dateFin;
 
     let cls = 'cal-day';
     if (isPast || isUnavail) cls += ' disabled';
     else if (isSel)          cls += ' selected';
+    else if (inRange)        cls += ' in-range';
     else if (isToday)        cls += ' today';
 
     const inter = (!isPast && !isUnavail)
@@ -813,12 +798,42 @@ function renderCal() {
   document.getElementById('calGrid').innerHTML = html;
 }
 
-function selectDate(d) {
-  R.dateSelected = d;
+function fmtJour(d, opt) {
   const [y,mo,da] = d.split('-');
-  const f = new Date(y, mo-1, da).toLocaleDateString('fr-FR',
-    { weekday:'long', day:'numeric', month:'long' });
-  document.getElementById('recapDate').textContent = f;
+  return new Date(y, mo-1, da).toLocaleDateString('fr-FR', opt);
+}
+// Nombre de jours d'une location (bornes incluses), 1 sinon
+function nbJours() {
+  return (R.mode === 'range' && R.dateSelected && R.dateFin)
+    ? Math.round((new Date(R.dateFin) - new Date(R.dateSelected)) / 86400000) + 1 : 1;
+}
+function datesTxt() { return R.dateFin ? `du ${R.dateSelected} au ${R.dateFin}` : R.dateSelected; }
+
+function majDates() {
+  const el = document.getElementById('recapDate');
+  if (!R.dateSelected) el.textContent = '—';
+  else if (R.dateFin) {
+    const o = { day:'numeric', month:'short' };
+    el.textContent = `Du ${fmtJour(R.dateSelected, o)} au ${fmtJour(R.dateFin, o)} (${nbJours()} j)`;
+  } else el.textContent = fmtJour(R.dateSelected, { weekday:'long', day:'numeric', month:'long' });
+  if (R.mode === 'range') {
+    const aide = document.getElementById('calAide');
+    aide.style.display = '';
+    aide.textContent = !R.dateSelected ? 'Choisissez la date de début de location.'
+      : !R.dateFin ? 'Choisissez maintenant la date de fin.' : 'Touchez une date pour recommencer.';
+  }
+}
+
+function selectDate(d) {
+  if (R.mode === 'fixed') return;             // date imposée par l'événement
+  if (R.mode === 'range') {
+    if (!R.dateSelected || R.dateFin || d < R.dateSelected) { R.dateSelected = d; R.dateFin = null; }
+    else if (R.unavailableDates.some(u => u > R.dateSelected && u < d)) {
+      showToast('Une date de cette période est indisponible', 'error');
+      R.dateSelected = d; R.dateFin = null;
+    } else { R.dateFin = d; }
+  } else { R.dateSelected = d; }
+  majDates();
   renderCal();
   // Re-render les créneaux (en cas de dates indisponibles spécifiques)
   renderCreneaux();
@@ -841,9 +856,7 @@ function changeNb(delta) {
   updateRecap();
 }
 
-// ════════════════════════════════════════════
 //  OPTIONS
-// ════════════════════════════════════════════
 function renderOptions(activite) {
   const c    = document.getElementById('optionsContainer');
   const opts = Array.isArray(activite.options) ? activite.options : [];
@@ -871,30 +884,29 @@ function updateOptions() {
   updateRecap();
 }
 
-// ════════════════════════════════════════════
 //  CALCUL PRIX
-// ════════════════════════════════════════════
 function updateRecap() {
   if (!R.prixBase) return;
-  const base  = R.prixBase * R.nb;
-  R.total     = base + R.optionsCout;
+  const base  = R.prixBase * R.nb * nbJours();
+  R.total     = base + R.optionsCout + COMMISSION;
 
-  document.getElementById('rLineBase').textContent    = `${R.nb} × ${R.prixBase.toLocaleString('fr-FR')} FCFA`;
+  document.getElementById('rLineBase').textContent    = `${R.nb} × ${R.prixBase.toLocaleString('fr-FR')} FCFA${nbJours() > 1 ? ` × ${nbJours()} j` : ''}`;
   document.getElementById('rLineBaseVal').textContent = `${base.toLocaleString('fr-FR')} FCFA`;
   const lo = document.getElementById('rLineOpts');
   lo.style.display = R.optionsCout > 0 ? 'flex' : 'none';
   document.getElementById('rLineOptsVal').textContent = `${R.optionsCout.toLocaleString('fr-FR')} FCFA`;
+  document.getElementById('rLineFeeVal').textContent  = `${COMMISSION.toLocaleString('fr-FR')} FCFA`;
   document.getElementById('rTotal').textContent       = `${R.total.toLocaleString('fr-FR')} FCFA`;
+  document.getElementById('carteTotal').textContent   = `${R.total.toLocaleString('fr-FR')} FCFA`;
   document.getElementById('waveTotal').textContent    = `${R.total.toLocaleString('fr-FR')} FCFA`;
   document.getElementById('orangeTotal').textContent  = `${R.total.toLocaleString('fr-FR')} FCFA`;
 }
 
-// ════════════════════════════════════════════
 //  NAVIGATION ÉTAPES
-// ════════════════════════════════════════════
 function goToStep(n) {
   if (n === 2 && R.step === 1) {
     if (!R.dateSelected)  { showToast('Choisissez une date', 'error'); return; }
+    if (R.mode === 'range' && !R.dateFin) { showToast('Choisissez la date de fin de location', 'error'); return; }
     if (!R.heure)         { showToast('Choisissez un horaire', 'error'); return; }
   }
 
@@ -913,7 +925,7 @@ function goToStep(n) {
     document.getElementById('payRecap').innerHTML = [
       ['Activité',   esc(R.activite?.nom || '—')],
       ['Période',    R.periode === 'jour' ? 'Journée' : 'Soirée / Nuit'],
-      ['Date',       `${R.dateSelected} à ${R.heure}`],
+      ['Date',       `${datesTxt()} à ${R.heure}`],
       ['Personnes',  `${R.nb}`],
       ['Client',     `${esc(R.prenom)} ${esc(R.nom)}`],
       ['Téléphone',  R.tel],
@@ -937,19 +949,17 @@ function goToStep(n) {
   window.scrollTo({ top:0, behavior:'smooth' });
 }
 
-// ════════════════════════════════════════════
 //  MÉTHODE DE PAIEMENT
-// ════════════════════════════════════════════
 function selectPayment(method) {
   R.paiement = method;
-  ['wave','orange','carte','especes'].forEach(m => {
+  ['wave','orange','carte'].forEach(m => {
     const key  = m.charAt(0).toUpperCase() + m.slice(1);
     document.getElementById(`pm${key}`).classList.toggle('selected', m === method);
     document.getElementById(`pm${key}`).setAttribute('aria-checked', m === method);
     document.getElementById(`instr${key}`).style.display = m === method ? '' : 'none';
   });
 }
-['wave','orange','carte','especes'].forEach(m => {
+['wave','orange','carte'].forEach(m => {
   document.getElementById(`pm${m.charAt(0).toUpperCase()+m.slice(1)}`)
     ?.addEventListener('keydown', e => {
       if (e.key==='Enter' || e.key===' ') selectPayment(m);
@@ -966,9 +976,7 @@ function showToast(msg, type='info') {
   setTimeout(() => t.remove(), 5000);
 }
 
-// ════════════════════════════════════════════
 //  SAUVEGARDE RÉSERVATION
-// ════════════════════════════════════════════
 async function sauvegarderReservation() {
   const arr = new Uint8Array(16);
   crypto.getRandomValues(arr);
@@ -977,11 +985,12 @@ async function sauvegarderReservation() {
   const payload = {
     activite_id:      R.activite.id,
     date:             R.dateSelected,
+    date_fin:         R.mode === 'range' ? R.dateFin : null,
     heure:            R.heure,
     nb_personnes:     R.nb,
     options:          R.optionsSelected,
     montant_total:    R.total,
-    methode_paiement: R.paiement === 'carte' ? 'carte' : R.paiement,
+    methode_paiement: R.paiement,
     note_client:      R.noteClient || null,
     qr_token:         R.token,
   };
@@ -999,9 +1008,7 @@ async function sauvegarderReservation() {
   return resa;
 }
 
-// ════════════════════════════════════════════
 //  CONFIRMER ET PAYER
-// ════════════════════════════════════════════
 async function confirmerEtPayer() {
   if (!document.getElementById('cgAccept').checked) {
     document.getElementById('payError').textContent = "Veuillez accepter les conditions d'utilisation";
@@ -1016,26 +1023,16 @@ async function confirmerEtPayer() {
   try {
     const resa = await sauvegarderReservation();
 
-    if (R.paiement === 'wave' || R.paiement === 'orange' || R.paiement === 'carte') {
-      if (window.Paiement) {
-        sessionStorage.setItem('da_pending_resa', JSON.stringify({
-          token: R.token, resaId: R.resaId || resa.id,
-          nom: R.activite?.nom, date: R.dateSelected, heure: R.heure,
-          periode: R.periode, nb: R.nb, total: R.total,
-          paiement: R.paiement, prenom: R.prenom, nom_client: R.nom, tel: R.tel,
-        }));
-        await window.Paiement.lancer(R.paiement, {
-          id: R.resaId || resa.id, montant: R.total, qr_token: R.token,
-        });
-        return;
-      } else {
-        showToast('Réservation enregistrée — les instructions de paiement vous seront envoyées sur WhatsApp', 'info');
-        await new Promise(r => setTimeout(r, 800));
-        afficherConfirmation(resa);
-      }
-    } else {
-      afficherConfirmation(resa);
-    }
+    if (!window.Paiement) throw new Error('Paiement en ligne indisponible. Rechargez la page et réessayez.');
+    sessionStorage.setItem('da_pending_resa', JSON.stringify({
+      token: R.token, resaId: R.resaId || resa.id,
+      nom: R.activite?.nom, date: R.dateSelected, dateFin: R.dateFin, heure: R.heure,
+      periode: R.periode, nb: R.nb, total: R.total,
+      paiement: R.paiement, prenom: R.prenom, nom_client: R.nom, tel: R.tel,
+    }));
+    await window.Paiement.lancer(R.paiement, {
+      id: R.resaId || resa.id, montant: R.total, qr_token: R.token,
+    });
   } catch(e) {
     document.getElementById('payError').textContent = e.message || 'Erreur. Réessayez.';
     document.getElementById('payError').style.display = '';
@@ -1052,9 +1049,9 @@ function afficherConfirmation(resa, paiementStatut = null) {
   document.getElementById('confirmRecapText').innerHTML = [
     ['Activité',   R.activite?.nom || '—'],
     ['Période',    periodeLabel],
-    ['Date',       `${R.dateSelected} à ${R.heure}`],
+    ['Date',       `${datesTxt()} à ${R.heure}`],
     ['Personnes',  `${R.nb}`],
-    ['Paiement',   R.paiement === 'especes' ? 'Sur place' : R.paiement],
+    ['Paiement',   { wave: 'Wave', orange: 'Orange Money', carte: 'Carte bancaire' }[R.paiement]],
     ['Total',      `${R.total.toLocaleString('fr-FR')} FCFA`],
   ].map(([k,v]) => `
     <div style="display:flex;justify-content:space-between">
@@ -1066,8 +1063,6 @@ function afficherConfirmation(resa, paiementStatut = null) {
   const statusEl = document.getElementById('paiementStatus');
   if (paiementStatut === 'complete') {
     statusEl.innerHTML = `<div style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:rgba(42,122,82,.1);border-radius:99px;font-size:13px;font-weight:600;color:var(--success)"><i class="ti ti-circle-check" style="font-size:15px"></i>Paiement confirmé</div>`;
-  } else if (R.paiement === 'especes') {
-    statusEl.innerHTML = `<div style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:rgba(184,146,42,.1);border-radius:99px;font-size:13px;font-weight:600;color:var(--gold)"><i class="ti ti-clock" style="font-size:15px"></i>Paiement sur place</div>`;
   } else {
     statusEl.innerHTML = `<div style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--paper-2);border-radius:99px;font-size:13px;color:var(--ink-3)"><i class="ti ti-clock" style="font-size:15px"></i>En attente de confirmation</div>`;
   }
@@ -1080,7 +1075,7 @@ function genQR() {
     text: JSON.stringify({
       ref: R.token.slice(0,8).toUpperCase(),
       activite: R.activite?.nom || '—',
-      date: R.dateSelected, heure: R.heure,
+      date: R.dateSelected, dateFin: R.dateFin, heure: R.heure,
       periode: R.periode, nb: R.nb, total: R.total,
     }),
     width:180, height:180,
@@ -1095,19 +1090,17 @@ function notifWhatsApp() {
   const msg = encodeURIComponent(
     `Nouvelle réservation — ${R.activite?.nom || ''}\n` +
     `Période : ${periodeLabel}\n` +
-    `Date : ${R.dateSelected} à ${R.heure}\n` +
+    `Date : ${datesTxt()} à ${R.heure}\n` +
     `Personnes : ${R.nb}\n` +
     `Montant : ${R.total.toLocaleString('fr-FR')} FCFA\n` +
     `Paiement : ${R.paiement}\n` +
     `Ref : ${R.token.slice(0,8).toUpperCase()}\n` +
     `Client : ${R.prenom} ${R.nom} — ${R.tel}`
   );
-  window.open(`https://wa.me/${779913729}?text=${msg}`, '_blank', 'noopener,noreferrer');
+  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank', 'noopener,noreferrer');
 }
 
-// ════════════════════════════════════════════
 //  RETOUR DEPUIS PAIEMENT
-// ════════════════════════════════════════════
 async function checkRetourPaiement() {
   const params  = new URLSearchParams(window.location.search);
   if (!params.get('paiement')) return false;
@@ -1116,7 +1109,7 @@ async function checkRetourPaiement() {
   if (!pending) return false;
 
   R.token = pending.token; R.resaId = pending.resaId;
-  R.dateSelected = pending.date; R.heure = pending.heure;
+  R.dateSelected = pending.date; R.dateFin = pending.dateFin || null; R.heure = pending.heure;
   R.periode = pending.periode || 'jour';
   R.nb = pending.nb; R.total = pending.total; R.paiement = pending.paiement;
   R.prenom = pending.prenom; R.nom = pending.nom_client; R.tel = pending.tel;
@@ -1137,9 +1130,7 @@ async function checkRetourPaiement() {
   return true;
 }
 
-// ════════════════════════════════════════════
 //  INIT
-// ════════════════════════════════════════════
 async function init() {
   // Init liste des pays
   renderCountryList();
@@ -1182,6 +1173,16 @@ async function init() {
   const prixAff = activite.promo ? Math.round(activite.prix*(1-activite.promo/100)) : activite.prix;
   R.prixBase = prixAff;
 
+  // Mode de date : fixe (événement), période (location) ou simple
+  R.mode = activite.date_evenement ? 'fixed' : (activite.categorie === 'location' ? 'range' : 'single');
+  if (R.mode === 'fixed') {
+    R.dateSelected = activite.date_evenement;
+    document.getElementById('calWrapper').style.display = 'none';
+    document.getElementById('dateFixe').style.display = '';
+    document.getElementById('dateFixeTxt').textContent =
+      fmtJour(R.dateSelected, { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  }
+
   // Afficher le sélecteur jour/nuit selon la période de l'activité
   const periodeContainer = document.getElementById('periodeContainer');
   if (activite.periode === 'jour_et_nuit') {
@@ -1216,6 +1217,7 @@ async function init() {
   const heureUrl = params.get('heure');
   const nbUrl    = parseInt(params.get('nb'), 10);
   if (dateUrl)   selectDate(dateUrl);
+  if (R.mode === 'range' && params.get('date_fin')) selectDate(params.get('date_fin'));
   if (heureUrl)  selectCreneau(heureUrl);
   if (nbUrl > 0) { R.nb = nbUrl; document.getElementById('nbDisplay').textContent = nbUrl; document.getElementById('recapNb').textContent = `${nbUrl} personne${nbUrl>1?'s':''}`; }
 
@@ -1223,9 +1225,10 @@ async function init() {
   renderCreneaux();
   renderCal();
   updateRecap();
+  majDates();
 
   // Période recap initiale
-  document.getElementById('recapPeriode').textContent = R.periode === 'nuit' ? '🌙 Soirée / Nuit' : '☀ Journée';
+  document.getElementById('recapPeriode').textContent = R.periode === 'nuit' ? 'Soirée / Nuit' : 'Journée';
 }
 
 window.addEventListener('scroll', () => {

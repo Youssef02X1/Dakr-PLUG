@@ -17,7 +17,7 @@
 <body>
 <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
-<!-- ═══ NAVBAR ═══ -->
+<!-- Navbar -->
 <nav class="navbar" id="navbar" role="navigation" aria-label="Navigation principale">
   <div class="container navbar-inner">
     <a href="index.html" class="nav-logo"><span>Dakar</span>PLUG</a>
@@ -53,7 +53,7 @@
   </div>
 </div>
 
-<!-- ═══ HERO ═══ -->
+<!-- Hero -->
 <header class="hero" role="banner">
   <div class="container">
     <div class="hero-grid">
@@ -80,9 +80,6 @@
             <option value="yoff">Yoff</option>
             <option value="lac_rose">Lac Rose</option>
             <option value="saly">Saly</option>
-            <option value="mbour">Mbour</option>
-            <option value="petite_cote">Petite Côte</option>
-            <option value="casamance">Casamance</option>
           </select>
           <button type="submit" class="btn btn-accent btn-sm">Rechercher</button>
         </form>
@@ -115,7 +112,7 @@
   </div>
 </header>
 
-<!-- ═══ BANNIÈRE ÉVÉNEMENT ═══ -->
+<!-- Bannière événement -->
 <section id="eventBanner" class="event-banner" style="display:none" aria-labelledby="eventTitle">
   <div style="display:grid;grid-template-columns:1fr 340px;max-width:1200px;margin:0 auto">
     <div style="padding:52px 56px 52px 40px;border-right:1px solid rgba(255,255,255,.07)">
@@ -150,7 +147,7 @@
   </div>
 </section>
 
-<!-- ═══ CATÉGORIES ═══ -->
+<!-- Catégories -->
 <section class="categories-section" aria-labelledby="catTitle">
   <div class="container">
     <div class="section-header">
@@ -161,7 +158,7 @@
   </div>
 </section>
 
-<!-- ═══ ACTIVITÉS ═══ -->
+<!-- Activités -->
 <section class="activities-section" id="activites" aria-labelledby="actTitle">
   <div class="container">
     <div class="activities-header">
@@ -183,7 +180,7 @@
           <option value="Ngor">Ngor</option>
           <option value="Saly">Saly</option>
           <option value="Lac Rose">Lac Rose</option>
-          <option value="Delta du Saloum">Delta du Sine-Saloum</option>
+          <option value="Delta du Saloum">Delta du Saloum</option>
         </select>
         <select id="filterTri" class="filter-select" aria-label="Trier par">
           <option value="recent">Plus récents</option>
@@ -203,7 +200,7 @@
   </div>
 </section>
 
-<!-- ═══ CARTE ═══ -->
+<!-- Carte -->
 <section class="map-section" id="carte" aria-labelledby="mapTitle">
   <div class="container">
     <div class="section-header">
@@ -217,7 +214,7 @@
   </div>
 </section>
 
-<!-- ═══ OFFRES ═══ -->
+<!-- Offres -->
 <section class="activities-section" id="bons-plans" aria-labelledby="bpTitle">
   <div class="container">
     <div class="section-header">
@@ -229,7 +226,7 @@
   </div>
 </section>
 
-<!-- ═══ RESTAURANTS ═══ -->
+<!-- Restaurants -->
 <section class="activities-section" id="restaurants" aria-labelledby="restoTitle">
   <div class="container">
     <div class="section-header">
@@ -241,7 +238,7 @@
   </div>
 </section>
 
-<!-- ═══ LOCATION ═══ -->
+<!-- Location -->
 <section class="activities-section" id="location" aria-labelledby="locTitle">
   <div class="container">
     <div class="section-header">
@@ -252,9 +249,9 @@
   </div>
 </section>
 
-<!-- ═══ FOOTER ═══ -->
+<!-- Footer -->
 
-<!-- ═══ SECTION DELTA DU SALOUM ═══ -->
+<!-- Section delta DU saloum -->
 <section class="saloum-section" style="background:linear-gradient(135deg,#0D1F1A 0%,#1B4D3E 100%);overflow:hidden;position:relative">
   <!-- Motif décoratif -->
   <div aria-hidden="true" style="position:absolute;top:-80px;right:-80px;width:400px;height:400px;
@@ -311,7 +308,7 @@
                       background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
                       border-radius:10px">
             <i class="ti ti-sailboat" style="font-size:18px;color:#C49A3C;flex-shrink:0" aria-hidden="true"></i>
-            <span style="font-size:13px;color:rgba(255,255,255,.75)">Balade en pirogue dans les bolongs</span>
+            <span style="font-size:13px;color:rgba(255,255,255,.75)">Balade en pirogue</span>
           </div>
           <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;
                       background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
@@ -399,7 +396,7 @@
   </div>
 </footer>
 
-<!-- ═══ SCRIPTS ═══ -->
+<!-- Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="seo.js"></script>
@@ -407,9 +404,7 @@
 <script src="analytics.js"></script>
 <script src="app.js"></script>
 <script>
-// ════════════════════════════════════════
-//  SÉCURITÉ — Anti-XSS
-// ════════════════════════════════════════
+//  SÉCURITÉ - Anti-XSS
 function esc(s) {
   if (s === null || s === undefined) return '';
   return String(s)
@@ -422,9 +417,7 @@ function safeUrl(u) {
   if (/^[a-z][a-z0-9+.-]*:/i.test(u) || u.startsWith('//')) return '';
   return u;
 }
-// ════════════════════════════════════════
 //  CATÉGORIES
-// ════════════════════════════════════════
 const CATS = [
   {key:'kayak',      label:'Kayak',      icon:'ti-sailboat'},
   {key:'jetski',     label:'Jet ski',     icon:'ti-speedboat'},
@@ -438,18 +431,14 @@ const CATS = [
   {key:'bons_plans', label:'Offres',      icon:'ti-tag'},
 ];
 
-// ════════════════════════════════════════
 //  ÉTAT
-// ════════════════════════════════════════
 const S = {
   cat:'', prix:'', zone:'', tri:'recent', q:'',
   page:1, size:9,
   all: [],
 };
 
-// ════════════════════════════════════════
 //  NAVBAR
-// ════════════════════════════════════════
 window.addEventListener('scroll', () => {
   document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20);
 });
@@ -463,9 +452,7 @@ document.addEventListener('click', e => {
   if (!hbg.contains(e.target) && !mob.contains(e.target)) mob.classList.remove('open');
 });
 
-// ════════════════════════════════════════
 //  TOAST
-// ════════════════════════════════════════
 function toast(msg, type='info') {
   const c = document.getElementById('toastContainer');
   const t = document.createElement('div');
@@ -476,9 +463,7 @@ function toast(msg, type='info') {
   setTimeout(() => t.remove(), 4000);
 }
 
-// ════════════════════════════════════════
 //  AUTH NAVBAR
-// ════════════════════════════════════════
 async function checkAuth() {
   try {
     const user = await window.DakarApp.Auth.getUser();
@@ -491,9 +476,7 @@ async function checkAuth() {
   } catch(e) { /* non configuré */ }
 }
 
-// ════════════════════════════════════════
 //  CATÉGORIES
-// ════════════════════════════════════════
 function renderCats() {
   document.getElementById('categoriesGrid').innerHTML = CATS.map(c => `
     <div class="cat-card ${S.cat===c.key?'active':''}"
@@ -515,9 +498,7 @@ function renderCats() {
   });
 }
 
-// ════════════════════════════════════════
 //  FILTRAGE LOCAL
-// ════════════════════════════════════════
 function filtered() {
   let list = S.all.filter(a => a.publiee);
   if (S.cat)  list = list.filter(a => a.categorie === S.cat);
@@ -536,9 +517,7 @@ function filtered() {
   return list;
 }
 
-// ════════════════════════════════════════
 //  CARTE D'ACTIVITÉ
-// ════════════════════════════════════════
 let favs;
 try {
   favs = new Set(JSON.parse(localStorage.getItem('da_favoris')||'[]').map(Number));
@@ -588,9 +567,7 @@ function card(a) {
   </article>`;
 }
 
-// ════════════════════════════════════════
 //  RENDU DE LA GRILLE
-// ════════════════════════════════════════
 function renderGrid() {
   const grid = document.getElementById('activitesGrid');
   const list = filtered();
@@ -625,9 +602,7 @@ function resetFiltres() {
   renderGrid();
 }
 
-// ════════════════════════════════════════
 //  FAVORIS
-// ════════════════════════════════════════
 async function toggleFav(id, btn) {
   try {
     const { Auth, Activites } = window.DakarApp;
@@ -651,9 +626,7 @@ async function toggleFav(id, btn) {
   } catch(e) { toast('Erreur', 'error'); }
 }
 
-// ════════════════════════════════════════
 //  CARTE LEAFLET
-// ════════════════════════════════════════
 let mapInst = null;
 
 function initMap(list) {
@@ -684,9 +657,7 @@ function initMap(list) {
   });
 }
 
-// ════════════════════════════════════════
 //  SECTIONS BONS PLANS / RESTAURANTS / LOCATION
-// ════════════════════════════════════════
 function renderSection(gridId, cat, bonsPlans=false) {
   const list = bonsPlans
     ? S.all.filter(a=>a.publiee&&a.bons_plans)
@@ -709,9 +680,7 @@ function renderBanner() {
   if (event.promo) document.getElementById('eventLabel').textContent = `Offre spéciale · -${event.promo}%`;
 }
 
-// ════════════════════════════════════════
 //  CHARGEMENT SUPABASE
-// ════════════════════════════════════════
 async function loadAll() {
   try {
     const { Activites } = window.DakarApp;
@@ -730,9 +699,7 @@ async function loadAll() {
   initMap(S.all);
 }
 
-// ════════════════════════════════════════
 //  FILTRES & EVENTS
-// ════════════════════════════════════════
 document.getElementById('filterPrix').addEventListener('change', e => { S.prix=e.target.value; S.page=1; renderGrid(); });
 document.getElementById('filterZone').addEventListener('change', e => { S.zone=e.target.value; S.page=1; renderGrid(); });
 document.getElementById('filterTri').addEventListener('change',  e => { S.tri=e.target.value;            renderGrid(); });
@@ -758,9 +725,7 @@ function applyUrlParams() {
   }
 }
 
-// ════════════════════════════════════════
 //  INIT
-// ════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   applyUrlParams();
   renderCats();

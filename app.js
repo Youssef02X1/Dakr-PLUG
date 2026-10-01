@@ -1,15 +1,13 @@
-// ============================================
-// APP.JS — Utilitaires globaux Dakar PLUG
-// ============================================
+// APP.JS - Utilitaires globaux Dakar PLUG
 
-// ── Service Worker (PWA + cache offline) ──
+// Service Worker (PWA + cache offline)
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {});
   });
 }
 
-// ── Lien actif navbar ──
+// Lien actif navbar
 document.addEventListener('DOMContentLoaded', () => {
   const page = window.location.pathname.split('/').pop() || 'index.html';
   document.querySelectorAll('.nav-links a').forEach(link => {
@@ -19,9 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// ════════════════════════════════════════════
 //  UTILITAIRES GLOBAUX
-// ════════════════════════════════════════════
 const AppUtils = {
 
   /** Formate un montant en FCFA */

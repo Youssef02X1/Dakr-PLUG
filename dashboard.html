@@ -105,7 +105,7 @@
   <!-- CONTENU -->
   <main class="dash-main">
 
-    <!-- ─── VUE D'ENSEMBLE ─── -->
+    <!-- VUE d'ensemble -->
     <section id="sectionOverview" class="dash-section">
       <div class="dash-header">
         <div>
@@ -164,7 +164,7 @@
       </div>
     </section>
 
-    <!-- ─── RÉSERVATIONS ─── -->
+    <!-- Réservations -->
     <section id="sectionReservations" class="dash-section" style="display:none">
       <div class="dash-header">
         <h1 style="font-family:var(--font-display);font-size:1.8rem;font-weight:300;letter-spacing:-.02em">Réservations</h1>
@@ -192,7 +192,7 @@
       </div>
     </section>
 
-    <!-- ─── ANNONCES ─── -->
+    <!-- Annonces -->
     <section id="sectionAnnonces" class="dash-section" style="display:none">
       <div class="dash-header">
         <h1 style="font-family:var(--font-display);font-size:1.8rem;font-weight:300;letter-spacing:-.02em">Annonces</h1>
@@ -205,7 +205,7 @@
       </div>
     </section>
 
-    <!-- ─── NOUVELLE ANNONCE ─── -->
+    <!-- Nouvelle annonce -->
     <section id="sectionNouvelle" class="dash-section" style="display:none">
       <div class="dash-header">
         <h1 id="formTitle" style="font-family:var(--font-display);font-size:1.8rem;font-weight:300;letter-spacing:-.02em">
@@ -301,7 +301,7 @@
           <div class="field" style="grid-column:1/-1" id="creneauxJourBlock">
             <label style="font-size:12px;font-weight:500;color:var(--ink-2);display:block;margin-bottom:8px">
               Créneaux Journée
-              <span style="font-size:11px;font-weight:400;color:var(--gold);margin-left:6px">☀</span>
+              
             </label>
             <div id="creneauxJourGrid" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
             <div style="display:flex;gap:8px;margin-top:4px">
@@ -317,7 +317,7 @@
           <div class="field" style="grid-column:1/-1" id="creneauxNuitBlock">
             <label style="font-size:12px;font-weight:500;color:var(--ink-2);display:block;margin-bottom:8px">
               Créneaux Soirée / Nuit
-              <span style="font-size:11px;font-weight:400;color:var(--teal);margin-left:6px">🌙</span>
+              
             </label>
             <div id="creneauxNuitGrid" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
             <div style="display:flex;gap:8px;margin-top:4px">
@@ -411,6 +411,10 @@
               <input type="checkbox" id="fBonsPlans">
               Mettre en avant (Bons plans)
             </label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px">
+              Date de l'événement (optionnel)
+              <input type="date" id="fDateEvt" style="padding:6px 8px;border:1px solid var(--line-2);border-radius:var(--r-sm);font:inherit">
+            </label>
             <div style="display:flex;align-items:center;gap:8px">
               <label class="toggle" aria-label="Publier">
                 <input type="checkbox" id="fPubliee" checked>
@@ -435,7 +439,7 @@
       </div>
     </section>
 
-    <!-- ─── AVIS ─── -->
+    <!-- Avis -->
     <section id="sectionAvis" class="dash-section" style="display:none">
       <div class="dash-header">
         <h1 style="font-family:var(--font-display);font-size:1.8rem;font-weight:300;letter-spacing:-.02em">Avis clients</h1>
@@ -452,7 +456,7 @@
       </div>
     </section>
 
-    <!-- ─── REVENUS ─── -->
+    <!-- Revenus -->
     <section id="sectionRevenus" class="dash-section" style="display:none">
       <div class="dash-header">
         <h1 style="font-family:var(--font-display);font-size:1.8rem;font-weight:300;letter-spacing:-.02em">Revenus</h1>
@@ -475,7 +479,7 @@
       </div>
     </section>
 
-    <!-- ─── ANALYTICS ─── -->
+    <!-- Analytics -->
     <section id="sectionAnalytics" class="dash-section" style="display:none">
       <div class="dash-header">
         <h1 style="font-family:var(--font-display);font-size:1.8rem;font-weight:300;letter-spacing:-.02em">Analytics</h1>
@@ -524,7 +528,7 @@
 <style>
 .dash-section { animation: fadeIn .25s ease; }
 
-/* ── Layout desktop (comportement inchangé au-dessus de 900px) ── */
+/* Layout desktop (comportement inchangé au-dessus de 900px) */
 .dash-sidebar {
   position: fixed; top: 0; left: 0; bottom: 0; width: 232px;
   background: var(--ink); z-index: 100;
@@ -534,7 +538,7 @@
 .dash-main { margin-left: 232px; padding: 36px; min-height: 100vh; background: var(--paper); }
 .dash-hamburger, .dash-backdrop { display: none; }
 
-/* ── Mobile : la sidebar devient un tiroir coulissant ── */
+/* Mobile : la sidebar devient un tiroir coulissant */
 @media (max-width: 900px) {
   .dash-sidebar { transform: translateX(-100%); width: 260px; }
   .dash-sidebar.open { transform: translateX(0); }
@@ -568,7 +572,7 @@
 <script src="supabase-config.js"></script>
 <script src="analytics.js"></script>
 <script>
-// SÉCURITÉ — Anti-XSS
+// SÉCURITÉ - Anti-XSS
 function esc(s) {
   if (s === null || s === undefined) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');
@@ -584,9 +588,7 @@ let _resas = [];
 let _acts  = [];
 let _resaToConfirm = null;
 
-// ─────────────────────────────
 //  UTILITAIRES
-// ─────────────────────────────
 function showToast(msg, type='info') {
   const c = document.getElementById('toastContainer');
   const t = document.createElement('div');
@@ -604,9 +606,7 @@ document.getElementById('modalConfirm').addEventListener('click', function(e) {
   if (e.target===this) closeModal('modalConfirm');
 });
 
-// ─────────────────────────────
 //  NAVIGATION SECTIONS
-// ─────────────────────────────
 function toggleDashSidebar(force) {
   const sidebar  = document.getElementById('dashSidebar');
   const backdrop = document.getElementById('dashBackdrop');
@@ -639,9 +639,7 @@ function showSection(name, linkEl) {
   if (name==='nouvelle')     resetForm();
 }
 
-// ─────────────────────────────
 //  OVERVIEW
-// ─────────────────────────────
 async function renderOverview() {
   try {
     const { Admin } = window.DakarApp;
@@ -667,7 +665,7 @@ async function renderOverview() {
     <tr>
       <td style="font-weight:500">${esc(r.profiles?.prenom||'')} ${esc(r.profiles?.nom||'')}</td>
       <td style="font-size:13px">${esc(r.activites?.nom||r.activite_nom||'—')}</td>
-      <td style="font-size:13px">${r.date||'—'}</td>
+      <td style="font-size:13px">${r.date||'—'}${r.date_fin?' au '+r.date_fin:''}</td>
       <td><strong style="color:var(--accent)">${(r.montant_total||0).toLocaleString('fr-FR')} FCFA</strong></td>
       <td><span class="resa-status ${r.statut}">${statusLabel(r.statut)}</span></td>
       <td>
@@ -696,9 +694,7 @@ async function renderOverview() {
   `).join('');
 }
 
-// ─────────────────────────────
 //  RÉSERVATIONS
-// ─────────────────────────────
 async function renderResas() {
   try {
     const { Reservations } = window.DakarApp;
@@ -719,7 +715,7 @@ async function renderResas() {
         <div style="font-size:11px;color:var(--ink-3)">${esc(r.profiles?.telephone||r.tel||'')}</div>
       </td>
       <td style="font-size:13px">${esc(r.activites?.nom||r.activite_nom||'—')}</td>
-      <td style="font-size:13px">${r.date||'—'} ${r.heure||''}</td>
+      <td style="font-size:13px">${r.date||'—'}${r.date_fin?' au '+r.date_fin:''} ${r.heure||''}</td>
       <td style="text-align:center">${r.nb_personnes||1}</td>
       <td><strong style="color:var(--accent)">${(r.montant_total||0).toLocaleString('fr-FR')} FCFA</strong></td>
       <td style="font-size:12px;text-transform:capitalize">${r.methode_paiement||'—'}</td>
@@ -792,9 +788,7 @@ function whatsappClient(id) {
   window.open(`https://wa.me/${num}?text=${msg}`, '_blank', 'noopener,noreferrer');
 }
 
-// ─────────────────────────────
 //  ANNONCES
-// ─────────────────────────────
 async function renderAnnonces() {
   try {
     const { Activites } = window.DakarApp;
@@ -877,6 +871,7 @@ function editAnnonce(id) {
   document.getElementById('fDesc').value = a.description||'';
   document.getElementById('fImage').value = a.image_principale||'';
   document.getElementById('fBonsPlans').checked = a.bons_plans||false;
+  document.getElementById('fDateEvt').value = a.date_evenement||'';
   document.getElementById('fPubliee').checked = a.publiee!==false;
   // Restaurer période
   document.getElementById('fPeriode').value = a.periode || 'jour';
@@ -900,9 +895,7 @@ function editAnnonce(id) {
   document.getElementById('btnSave').innerHTML = '<i class="ti ti-check" style="font-size:14px"></i> Enregistrer les modifications';
 }
 
-// ─────────────────────────────
 //  FORMULAIRE ANNONCE
-// ─────────────────────────────
 function resetForm() {
   document.getElementById('formTitle').textContent = 'Nouvelle annonce';
   ['fNom','fPrix','fPromo','fDuree','fCapacite','fAdresse','fLat','fLng','fDesc','fImage'].forEach(id=>{
@@ -917,6 +910,7 @@ function resetForm() {
   // Réinitialiser créneaux
   creneaux.jour = ['08:00','09:00','10:00','11:00','14:00','15:00','16:00','17:00'];
   creneaux.nuit = ['18:00','19:00','20:00','21:00','22:00','23:00'];
+  document.getElementById('fDateEvt').value = '';
   document.getElementById('fPeriode').value = 'jour';
   toggleCreneaux('jour');
   renderCreneaux('jour');
@@ -1033,6 +1027,7 @@ async function saveAnnonce() {
     capacite:parseInt(document.getElementById('fCapacite').value)||null,
     image_principale:image,options,lat,lng,
     bons_plans:document.getElementById('fBonsPlans').checked,
+    date_evenement:document.getElementById('fDateEvt').value||null,
     publiee:document.getElementById('fPubliee').checked,
   };
 
@@ -1060,9 +1055,7 @@ async function saveAnnonce() {
   showSection('annonces', null);
 }
 
-// ─────────────────────────────
 //  AVIS
-// ─────────────────────────────
 async function renderAvis() {
   let avis = [];
   try {
@@ -1103,9 +1096,7 @@ async function validerAvis(id, btn) {
   }
 }
 
-// ─────────────────────────────
 //  REVENUS
-// ─────────────────────────────
 function renderRevenus() {
   const conf  = _resas.filter(r=>r.statut==='confirmee');
   const total = conf.reduce((s,r)=>s+r.montant_total,0);
@@ -1189,9 +1180,7 @@ async function renderAnalytics() {
   }
 }
 
-// ─────────────────────────────
 //  INIT
-// ─────────────────────────────
 async function init() {
   let isAdmin = false;
   try {
@@ -1200,7 +1189,7 @@ async function init() {
     const user = await Auth.getUser();
     if (user) document.getElementById('adminEmailLabel').textContent = user.email;
   } catch(e) {
-    // Pas de backdoor localhost — si Supabase non configuré, accès refusé
+    // Pas de backdoor localhost - si Supabase non configuré, accès refusé
     isAdmin = false;
     console.warn('Supabase non configuré — accès admin refusé');
   }
@@ -1227,9 +1216,7 @@ async function init() {
 
 document.addEventListener('DOMContentLoaded', init);
 
-// ════════════════════════════════════════
 //  GESTION CRÉNEAUX JOUR / NUIT
-// ════════════════════════════════════════
 const creneaux = {
   jour: ['08:00','09:00','10:00','11:00','14:00','15:00','16:00','17:00'],
   nuit: ['18:00','19:00','20:00','21:00','22:00','23:00'],

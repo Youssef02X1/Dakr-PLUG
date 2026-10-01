@@ -1,7 +1,5 @@
-// ============================================
-// NOTIFICATIONS.JS — Push Notifications
+// NOTIFICATIONS.JS - Push Notifications
 // Dakar PLUG
-// ============================================
 // Notifie l'admin en temps réel quand une réservation arrive
 // Notifie le client quand sa réservation est confirmée
 //
@@ -9,13 +7,10 @@
 // 1. Générer les clés VAPID sur https://vapidkeys.com/
 // 2. Remplacer VAPID_PUBLIC_KEY et VAPID_PRIVATE_KEY
 // 3. Les utilisateurs doivent accepter les notifications dans leur navigateur
-// ============================================
 
 const VAPID_PUBLIC_KEY = 'VOTRE_VAPID_PUBLIC_KEY'; // depuis vapidkeys.com
 
-// ════════════════════════════════════════════
 //  CONVERSION CLÉ VAPID
-// ════════════════════════════════════════════
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
   const base64  = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -23,9 +18,7 @@ function urlBase64ToUint8Array(base64String) {
   return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
 }
 
-// ════════════════════════════════════════════
 //  DEMANDE DE PERMISSION
-// ════════════════════════════════════════════
 const PushNotif = {
 
   /**
@@ -110,7 +103,7 @@ const PushNotif = {
     });
   },
 
-  // ── Notifications prédéfinies ──
+  // Notifications prédéfinies
 
   async nouvelleReservation(activiteNom, ref) {
     await this.afficher({
@@ -137,10 +130,8 @@ const PushNotif = {
   },
 };
 
-// ════════════════════════════════════════════
 //  ÉCOUTE TEMPS RÉEL SUPABASE → ADMIN
 //  Déclenche une notification à chaque nouvelle réservation
-// ════════════════════════════════════════════
 const RealtimeNotif = {
 
   channel: null,
@@ -256,10 +247,8 @@ const RealtimeNotif = {
   },
 };
 
-// ════════════════════════════════════════════
-//  SERVICE WORKER — gestion des clics notif
+//  SERVICE WORKER - gestion des clics notif
 //  À ajouter dans sw.js
-// ════════════════════════════════════════════
 // self.addEventListener('notificationclick', event => {
 //   event.notification.close();
 //   const url = event.notification.data?.url || '/';

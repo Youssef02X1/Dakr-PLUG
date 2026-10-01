@@ -18,18 +18,14 @@ const EMAIL_ADMIN     = 'youssef@dakarplug.sn';  // votre email admin
 const SITE_NAME       = 'Dakar PLUG';
 const SITE_URL        = 'https://dakarplug.netlify.app';
 
-// ============================================
 // TEMPLATES D'EMAILS
-// ============================================
 
 const Templates = {
 
-  // ── Email de confirmation au client ──
+  // Email de confirmation au client
   confirmationClient(resa, activite) {
     const ref     = (resa.qr_token || '').slice(0,8).toUpperCase();
-    const dateF   = new Date(resa.date + 'T00:00:00').toLocaleDateString('fr-FR', {
-      weekday:'long', day:'numeric', month:'long', year:'numeric'
-    });
+    const dateF = ((f) => resa.date_fin ? 'du ' + f(resa.date) + ' au ' + f(resa.date_fin) : f(resa.date))((s) => new Date(s + 'T00:00:00').toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' }));
     const montant = (resa.montant_total || 0).toLocaleString('fr-FR');
 
     return {
@@ -174,7 +170,7 @@ const Templates = {
         <tr>
           <td style="padding:20px 36px;text-align:center">
             <p style="font-size:11px;color:#B0B0B0;margin:0">
-              © 2026 ${SITE_NAME} · Dakar, Sénégal
+              © 2025 ${SITE_NAME} · Dakar, Sénégal
             </p>
           </td>
         </tr>
@@ -188,12 +184,10 @@ const Templates = {
     };
   },
 
-  // ── Email de notification à l'admin ──
+  // Email de notification à l'admin
   notificationAdmin(resa, activite, client) {
     const ref   = (resa.qr_token || '').slice(0,8).toUpperCase();
-    const dateF = new Date(resa.date + 'T00:00:00').toLocaleDateString('fr-FR',{
-      weekday:'long', day:'numeric', month:'long', year:'numeric'
-    });
+    const dateF = ((f) => resa.date_fin ? 'du ' + f(resa.date) + ' au ' + f(resa.date_fin) : f(resa.date))((s) => new Date(s + 'T00:00:00').toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' }));
     return {
       subject: `[Nouvelle réservation] ${activite.nom} — ${ref}`,
       html: `
@@ -245,7 +239,7 @@ const Templates = {
     };
   },
 
-  // ── Email de rappel 24h avant ──
+  // Email de rappel 24h avant
   rappel24h(resa, activite, client) {
     const ref = (resa.qr_token || '').slice(0,8).toUpperCase();
     return {
@@ -286,9 +280,7 @@ const Templates = {
   },
 };
 
-// ============================================
 // FONCTION D'ENVOI VIA RESEND
-// ============================================
 async function envoyerEmail({ to, subject, html }) {
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -312,9 +304,7 @@ async function envoyerEmail({ to, subject, html }) {
   return await response.json();
 }
 
-// ============================================
-// FONCTIONS PRINCIPALES — à appeler depuis votre code
-// ============================================
+// FONCTIONS PRINCIPALES - à appeler depuis votre code
 const Emails = {
 
   /**
@@ -357,9 +347,7 @@ const Emails = {
   },
 };
 
-// ============================================
-// SUPABASE EDGE FUNCTION — webhook-emails
-// ============================================
+// SUPABASE EDGE FUNCTION - webhook-emails
 // Ce code est à déployer dans Supabase → Edge Functions
 // Il déclenche les emails automatiquement à chaque nouvelle réservation
 //
@@ -371,7 +359,7 @@ const Emails = {
 //    - URL : https://VOTRE_PROJECT_ID.supabase.co/functions/v1/webhook-emails
 //    - HTTP Method : POST
 //
-// ──────────────── EDGE_FUNCTION_START ────────────────
+// Edge_function_start
 //
 // import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 //
@@ -405,7 +393,7 @@ const Emails = {
 //     body: JSON.stringify({
 //       from: `Dakar PLUG <${EMAIL_FROM}>`,
 //       to:   [resa.client_email],
-//       subject: `Réservation confirmée — ${activite?.nom} (${ref})`,
+//       subject: `Réservation confirmée - ${activite?.nom} (${ref})`,
 //       html: `<p>Bonjour,</p><p>Votre réservation pour <strong>${activite?.nom}</strong>
 //              le ${resa.date} à ${resa.heure} est enregistrée.</p>
 //              <p>Référence : <strong>${ref}</strong><br>Montant : <strong>${montant} FCFA</strong></p>
@@ -420,10 +408,10 @@ const Emails = {
 //     body: JSON.stringify({
 //       from: `Dakar PLUG <${EMAIL_FROM}>`,
 //       to:   [EMAIL_ADMIN],
-//       subject: `[Nouvelle réservation] ${activite?.nom} — ${ref}`,
+//       subject: `[Nouvelle réservation] ${activite?.nom} - ${ref}`,
 //       html: `<p>Nouvelle réservation :<br>
 //              <strong>${client?.prenom} ${client?.nom}</strong> —
-//              ${activite?.nom} — ${resa.date} ${resa.heure} —
+//              ${activite?.nom} - ${resa.date} ${resa.heure} —
 //              ${montant} FCFA</p>
 //              <p><a href="${SITE_URL}/dashboard.html">Voir le dashboard</a></p>`,
 //     }),
@@ -432,7 +420,7 @@ const Emails = {
 //   return new Response(JSON.stringify({ ok: true }), { status: 200 })
 // })
 //
-// ──────────────── EDGE_FUNCTION_END ────────────────
+// Edge_function_end
 //
 // VARIABLES D'ENVIRONNEMENT à ajouter dans Supabase → Edge Functions → Secrets :
 // RESEND_API_KEY       → votre clé Resend

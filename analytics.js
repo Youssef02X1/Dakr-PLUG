@@ -1,6 +1,4 @@
-// ============================================
-// ANALYTICS.JS — Suivi de pages léger, maison
-// ============================================
+// ANALYTICS.JS - Suivi de pages léger, maison
 // Pas de cookie, pas de service tiers, pas de fingerprinting.
 // session_id est généré via crypto.getRandomValues et vit en
 // sessionStorage : il disparaît à la fermeture de l'onglet, donc
@@ -9,7 +7,6 @@
 // À inclure sur CHAQUE page, juste APRÈS supabase-config.js :
 //   <script src="supabase-config.js"></script>
 //   <script src="analytics.js"></script>
-// ============================================
 (function () {
   try {
     let sid = sessionStorage.getItem('da_sid');

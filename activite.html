@@ -19,7 +19,7 @@
     <ul class="nav-links">
       <li><a href="index.html">Accueil</a></li>
       <li><a href="index.html#activites">Activités</a></li>
-      <li><a href="saloum.html" style="color:var(--teal);font-weight:500">Delta du Saloum</a></li>
+      <li><a href="saloum.html" style="color:var(--teal);font-weight:500">Delta du Sine-Saloum</a></li>
       <li><a href="index.html#carte">Carte</a></li>
     </ul>
     <div class="nav-actions">
@@ -82,7 +82,7 @@
 // ============ HELPERS ============
 // CORRECTIF CRITIQUE : esc()/safeUrl() sont utilisés dans toute cette page mais
 // n'étaient définis nulle part (app.js, qui les fournit sur index.html, n'est pas
-// chargé ici) — chaque appel provoquait un ReferenceError qui interrompait le
+// chargé ici) - chaque appel provoquait un ReferenceError qui interrompait le
 // rendu de la fiche activité. En plus de réparer la page, cet échappement est
 // ce qui protège les noms/avis affichés (données utilisateur) contre l'injection
 // de HTML/JS.
@@ -260,7 +260,7 @@ function renderDetail(a) {
         </div>
       </div>
 
-      <!-- COLONNE DROITE — BOOKING WIDGET -->
+      <!-- COLONNE DROITE - BOOKING WIDGET -->
       <div>
         <div class="booking-widget">
           <div class="price-big" style="margin-bottom:4px">
@@ -273,11 +273,17 @@ function renderDetail(a) {
 
           <div class="booking-form">
             <div class="field">
-              <label for="bkDate">Date de réservation</label>
+              <label for="bkDate">${a.date_evenement ? 'Date de l\'événement' : a.categorie==='location' ? 'Début de la location' : 'Date de réservation'}</label>
               <input type="date" id="bkDate" min="${new Date().toISOString().split('T')[0]}"
+                     ${a.date_evenement ? `value="${a.date_evenement}" readonly` : ''}
                      onchange="updateWidgetPrice();checkDispo(this.value)" aria-required="true">
               <div id="dispoMsg" style="font-size:12px;display:none"></div>
             </div>
+            ${(a.categorie==='location' && !a.date_evenement) ? `<div class="field">
+              <label for="bkDateFin">Fin de la location</label>
+              <input type="date" id="bkDateFin" min="${new Date().toISOString().split('T')[0]}"
+                     onchange="updateWidgetPrice()" aria-required="true">
+            </div>` : ''}
             <!-- SÉLECTEUR PÉRIODE (affiché si l'activité est jour ET nuit) -->
             <div id="widgetPeriode" style="display:none;margin-bottom:12px">
               <label style="font-size:12px;font-weight:500;color:var(--ink-2);display:block;margin-bottom:6px">Période</label>
@@ -286,13 +292,13 @@ function renderDetail(a) {
                         onclick="selectWidgetPeriode('jour')"
                         style="flex:1;padding:8px;border:1.5px solid var(--gold);border-radius:var(--r-sm);
                                background:var(--gold-lt);color:var(--gold);font-size:12px;font-weight:600;cursor:pointer">
-                  ☀ Journée
+                  Journée
                 </button>
                 <button type="button" id="bkBtnNuit"
                         onclick="selectWidgetPeriode('nuit')"
                         style="flex:1;padding:8px;border:1.5px solid var(--line-2);border-radius:var(--r-sm);
                                background:var(--white);color:var(--ink-3);font-size:12px;font-weight:600;cursor:pointer">
-                  🌙 Soirée
+                  Soirée
                 </button>
               </div>
             </div>
@@ -325,9 +331,13 @@ function renderDetail(a) {
               <span>Options</span>
               <span id="bkLineOptsVal">—</span>
             </div>
+            <div class="price-line">
+              <span>Frais de service</span>
+              <span>${COMMISSION.toLocaleString('fr-FR')} FCFA</span>
+            </div>
             <div class="price-total">
               <span>Total</span>
-              <strong id="bkTotal">${prixAff.toLocaleString('fr-FR')} FCFA</strong>
+              <strong id="bkTotal">${(prixAff + COMMISSION).toLocaleString('fr-FR')} FCFA</strong>
             </div>
           </div>
 
@@ -356,7 +366,7 @@ function renderDetail(a) {
     </div>
   `;
 
-  // SEO — balises structurées
+  // SEO - balises structurées
   if (window.SEO) {
     const SITE_URL = window.DakarApp?.SITE_URL || window.location.origin;
     SEO.setMeta({
@@ -421,14 +431,16 @@ function updateWidgetPrice() {
   const nb = window._nb || 1;
   const opts = [...(document.querySelectorAll('#optionsList input:checked')||[])];
   const optsTotal = opts.reduce((s,o)=>s+parseInt(o.value),0);
-  const base = window._prixAff * nb;
-  const total = base + optsTotal;
+  const d1 = document.getElementById('bkDate')?.value, d2 = document.getElementById('bkDateFin')?.value;
+  const jours = (d1 && d2 && d2 >= d1) ? Math.round((new Date(d2) - new Date(d1)) / 86400000) + 1 : 1;
+  const base = window._prixAff * nb * jours;
+  const total = base + optsTotal + COMMISSION;
   const l = document.getElementById('bkLineBase');
   const lv = document.getElementById('bkLineBaseVal');
   const lo = document.getElementById('bkLineOpts');
   const lov = document.getElementById('bkLineOptsVal');
   const t = document.getElementById('bkTotal');
-  if(l) l.textContent = `${nb} × ${window._prixAff.toLocaleString('fr-FR')} FCFA`;
+  if(l) l.textContent = `${nb} × ${window._prixAff.toLocaleString('fr-FR')} FCFA${jours>1?` × ${jours} j`:''}`;
   if(lv) lv.textContent = `${base.toLocaleString('fr-FR')} FCFA`;
   if(lo) lo.style.display = optsTotal > 0 ? '' : 'none';
   if(lov) lov.textContent = `${optsTotal.toLocaleString('fr-FR')} FCFA`;
@@ -451,7 +463,7 @@ function checkDispo(date) {
   }
 }
 
-// ── Période sélectionnée dans le widget ──
+// Période sélectionnée dans le widget
 window._periodeWidget = 'jour';
 
 function selectWidgetPeriode(p) {
@@ -487,14 +499,16 @@ function updateWidgetCreneaux(periode) {
 
 function goReserver(id) {
   const date    = document.getElementById('bkDate')?.value;
+  const dateFin = document.getElementById('bkDateFin')?.value;
   const heure   = document.getElementById('bkHeure')?.value;
   const nb      = window._nb || 1;
   const periode = window._periodeWidget || 'jour';
   const opts    = [...(document.querySelectorAll('#optionsList input:checked')||[])]
     .map(o=>o.dataset.label).join(',');
   if (!date)  { showToast('Choisissez une date', 'error'); return; }
+  if (document.getElementById('bkDateFin') && (!dateFin || dateFin < date)) { showToast('Choisissez la date de fin de location', 'error'); return; }
   if (!heure) { showToast('Choisissez un horaire', 'error'); return; }
-  const params = new URLSearchParams({ id, date, heure, nb, periode, opts });
+  const params = new URLSearchParams({ id, date, heure, nb, periode, opts, ...(dateFin ? { date_fin: dateFin } : {}) });
   window.location.href = `reservation.html?${params}`;
 }
 

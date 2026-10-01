@@ -1,9 +1,9 @@
-// ============================================
-// SUPABASE CONFIG — Dakar PLUG
-// ============================================
+// SUPABASE CONFIG - Dakar PLUG
 // MODIFIEZ CES 7 VALEURS AVEC VOS VRAIES INFORMATIONS
 // Trouvez vos clés dans Supabase → Project Settings → API
-// ============================================
+
+// Frais de service par réservation (FCFA), même valeur que dans le trigger SQL
+const COMMISSION = 500;
 
 const SUPABASE_URL      = 'https://jjlkdogolzdaxsxfuxpi.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqbGtkb2dvbHpkYXhzeGZ1eHBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2MzIzMTEsImV4cCI6MjEwNDIwODMxMX0.ESAF47a3S9-7FrByEB7t2SuEHoXWFg-eAwuOCPL6rus';
@@ -11,9 +11,7 @@ const ADMIN_EMAIL       = 'lefayoussef@gmail.com';         // votre email admin
 const WHATSAPP_NUMBER   = '221779913729';             // sans + ni espaces
 const SITE_URL          = 'https://dakarplug.netlify.app'; // URL finale du site
 
-// ============================================
 // CLIENT SUPABASE
-// ============================================
 // Helper : timeout sur les requêtes (évite les requêtes infinies)
 async function withTimeout(promise, ms = 10000) {
   const timeout = new Promise((_, reject) =>
@@ -30,9 +28,7 @@ const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   }
 });
 
-// ============================================
-// SÉCURITÉ — nettoyage des entrées
-// ============================================
+// SÉCURITÉ - nettoyage des entrées
 const Security = {
   escape(str) {
     if (typeof str !== 'string') return '';
@@ -78,9 +74,7 @@ const Security = {
   },
 };
 
-// ============================================
 // AUTH
-// ============================================
 const Auth = {
   async signUp(email, password, nom, prenom) {
     if (!Security.isValidEmail(email)) throw new Error('Email invalide');
@@ -142,9 +136,7 @@ const Auth = {
   },
 };
 
-// ============================================
 // ACTIVITÉS
-// ============================================
 const Activites = {
   async getAll(filters = {}) {
     let q = sb.from('activites').select('*').eq('publiee', true);
@@ -240,9 +232,7 @@ const Activites = {
   },
 };
 
-// ============================================
 // RÉSERVATIONS
-// ============================================
 const Reservations = {
   async creer(data) {
     const user = await Auth.getUser();
@@ -253,6 +243,7 @@ const Reservations = {
       user_id:          user.id,
       activite_id:      parseInt(clean.activite_id, 10),
       date:             clean.date,
+      date_fin:         clean.date_fin || null,
       heure:            clean.heure,
       nb_personnes:     parseInt(clean.nb_personnes, 10),
       options:          Array.isArray(clean.options) ? clean.options : [],
@@ -308,9 +299,7 @@ const Reservations = {
   },
 };
 
-// ============================================
 // ADMIN
-// ============================================
 const Admin = {
   async publierActivite(data) {
     const isAdmin = await Auth.isAdmin();
@@ -335,6 +324,7 @@ const Admin = {
       creneaux_jour: c.creneaux_jour || ['08:00','09:00','10:00','11:00','14:00','15:00','16:00','17:00'],
       creneaux_nuit: c.creneaux_nuit || ['18:00','19:00','20:00','21:00','22:00','23:00'],
       bons_plans: Boolean(c.bons_plans), publiee: Boolean(c.publiee),
+      date_evenement: c.date_evenement || null,
       lat: c.lat ? parseFloat(c.lat) : null,
       lng: c.lng ? parseFloat(c.lng) : null,
     };
@@ -358,6 +348,7 @@ const Admin = {
       image_principale: c.image_principale,
       images: c.images||[], options: c.options||[],
       bons_plans: Boolean(c.bons_plans), publiee: Boolean(c.publiee),
+      date_evenement: c.date_evenement || null,
       lat: c.lat ? parseFloat(c.lat) : null,
       lng: c.lng ? parseFloat(c.lng) : null,
       updated_at: new Date().toISOString(),
@@ -412,9 +403,7 @@ const Admin = {
   },
 };
 
-// ============================================
-// STORAGE — Upload photos
-// ============================================
+// STORAGE - Upload photos
 const Storage = {
   async uploadImage(file) {
     const isAdmin = await Auth.isAdmin();
@@ -436,9 +425,7 @@ const Storage = {
   },
 };
 
-// ============================================
 // AVIS
-// ============================================
 const Avis = {
   async soumettre(activiteId, note, texte) {
     const user = await Auth.getUser();
@@ -472,9 +459,7 @@ const Avis = {
   },
 };
 
-// ============================================
 // WHATSAPP
-// ============================================
 function redirectWhatsApp(reservation, activiteNom) {
   const msg = encodeURIComponent(
     `Nouvelle réservation — ${activiteNom}\n` +
@@ -484,12 +469,10 @@ function redirectWhatsApp(reservation, activiteNom) {
     `Paiement : ${reservation.methode_paiement||''}\n` +
     `Ref : ${(reservation.qr_token||'').slice(0,8).toUpperCase()}`
   );
-  window.open(`https://wa.me/${779913729}?text=${msg}`, '_blank', 'noopener,noreferrer');
+  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank', 'noopener,noreferrer');
 }
 
-// ============================================
 // EXPORT GLOBAL
-// ============================================
 window.DakarApp = {
   sb, SUPABASE_URL,
   ADMIN_EMAIL, WHATSAPP_NUMBER, SITE_URL,

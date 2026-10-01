@@ -240,7 +240,7 @@ function showErr(id, msg) {
 }
 function clearErr(id) { document.getElementById(id).style.display = 'none'; }
 
-// ── TABS ──
+// Tabs
 function switchTab(tab) {
   const isConn = tab === 'connexion';
   document.getElementById('panelConnexion').style.display   = isConn ? '' : 'none';
@@ -260,7 +260,7 @@ function showConnexion() {
   document.getElementById('panelForgot').style.display    = 'none';
 }
 
-// ── TOGGLE PASSWORD ──
+// Toggle password
 function togglePwd(id, btn) {
   const inp = document.getElementById(id);
   const hide = inp.type === 'password';
@@ -268,7 +268,7 @@ function togglePwd(id, btn) {
   btn.textContent = hide ? 'Cacher' : 'Voir';
 }
 
-// ── FORCE MOT DE PASSE ──
+// Force MOT DE passe
 function evalPwd(pwd) {
   const el  = document.getElementById('pwdStrength');
   const bar = document.getElementById('pwdBar');
@@ -293,7 +293,7 @@ function evalPwd(pwd) {
   lbl.textContent = lvl.t; lbl.style.color = lvl.c;
 }
 
-// ── CONNEXION ──
+// Connexion
 // SÉCURITÉ : rate limiting connexion (max 5 tentatives / 15 min)
 const _loginAttempts = { count: 0, resetAt: 0 };
 async function doLogin() {
@@ -332,7 +332,7 @@ async function doLogin() {
   }
 }
 
-// ── GOOGLE ──
+// Google
 async function loginGoogle() {
   try {
     const { Auth } = window.DakarApp;
@@ -342,7 +342,7 @@ async function loginGoogle() {
   }
 }
 
-// ── INSCRIPTION ──
+// Inscription
 async function doRegister() {
   clearErr('regError');
   const prenom  = document.getElementById('regPrenom').value.trim().replace(/[<>"']/g,'').slice(0,50);
@@ -383,7 +383,7 @@ async function doRegister() {
   }
 }
 
-// ── MOT DE PASSE OUBLIÉ ──
+// MOT DE passe oublié
 async function doForgot() {
   const email = document.getElementById('forgotEmail').value.trim();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Email invalide','error'); return; }
@@ -397,7 +397,7 @@ async function doForgot() {
   }
 }
 
-// ── CLAVIER ──
+// Clavier
 document.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
   if (document.getElementById('panelConnexion').style.display !== 'none') doLogin();
@@ -405,7 +405,7 @@ document.addEventListener('keydown', e => {
   else if (document.getElementById('panelForgot').style.display !== 'none') doForgot();
 });
 
-// ── INIT ──
+// Init
 document.addEventListener('DOMContentLoaded', async () => {
   const params = new URLSearchParams(window.location.search);
   if (params.get('mode') === 'signup') switchTab('inscription');
