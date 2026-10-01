@@ -841,14 +841,27 @@ async function deleteAnnonce(id) {
   const a = _acts.find(x => x.id === id);
   const nom = a?.nom || `#${id}`;
   if (!confirm(`Supprimer "${nom}" définitivement ?`)) return;
+  const { Admin } = window.DakarApp;
   try {
-    const { Admin } = window.DakarApp;
     await Admin.supprimerActivite(id);
-  } catch(e) {
-    const i = _acts.findIndex(a=>a.id===id);
-    if (i!==-1) _acts.splice(i,1);
+    const i = _acts.findIndex(x => x.id === id);
+    if (i !== -1) _acts.splice(i, 1);
+    showToast('Annonce supprimée', 'success');
+  } catch (e) {
+    if (e.code === '23503') {
+      // Des réservations existent : on ne peut que masquer l'annonce
+      if (!confirm('Cette annonce a des réservations et ne peut pas être supprimée. La masquer du site à la place ?')) return;
+      try {
+        await Admin.togglePublication(id, false);
+        if (a) a.publiee = false;
+        showToast('Annonce masquée du site', 'success');
+      } catch (e2) {
+        showToast(`Échec : ${e2.message || 'erreur serveur'}`, 'error');
+      }
+    } else {
+      showToast(`Suppression impossible : ${e.message || 'erreur serveur'}`, 'error');
+    }
   }
-  showToast('Annonce supprimée', 'success');
   renderAnnonces();
 }
 
@@ -962,16 +975,9 @@ async function handleFile(file) {
     document.getElementById('uploadProgress').style.display='none';
     showToast('Image uploadée', 'success');
   } catch(e) {
-    // Fallback : aperçu local sans upload
-    const reader = new FileReader();
-    reader.onload = ev => {
-      document.getElementById('fImage').value = ev.target.result;
-      document.getElementById('imgPreview').src = ev.target.result;
-      document.getElementById('previewBox').style.display='';
-      document.getElementById('uploadProgress').style.display='none';
-    };
-    reader.readAsDataURL(file);
-    showToast('Aperçu local (configurez Supabase Storage pour persister)', 'info');
+    document.getElementById('uploadProgress').style.display='none';
+    document.getElementById('dropContent').style.display='';
+    showToast(`Envoi de l'image impossible : ${e.message || 'erreur Storage'}. Collez plutôt un lien https.`, 'error');
   }
 }
 
@@ -1007,7 +1013,8 @@ async function saveAnnonce() {
   if (!zone)                          { err.textContent='Zone requise';      err.style.display='';return; }
   if (!prix||isNaN(prix)||prix<0)     { err.textContent='Prix invalide';     err.style.display='';return; }
   if (desc.length<20)                 { err.textContent='Description trop courte (min. 20 car.)'; err.style.display='';return; }
-  if (!image||!image.startsWith('http')){ err.textContent='URL image invalide'; err.style.display='';return; }
+  if (!image)                         { err.textContent='Ajoutez une image (fichier ou lien https)'; err.style.display='';return; }
+  if (!image.startsWith('https://'))  { err.textContent='Le lien de l\'image doit commencer par https://'; err.style.display='';return; }
 
   // Options
   const options = [];

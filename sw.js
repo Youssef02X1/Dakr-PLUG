@@ -1,7 +1,7 @@
 // SERVICE WORKER - Dakar PLUG
 // Cache offline + gestion notifications push
 
-const CACHE_NAME    = 'dakar-plug-v9';
+const CACHE_NAME    = 'dakar-plug-v10';
 const STATIC_ASSETS = [
   '/index.html',
   '/activite.html',
